@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Withdraw - Ads Click Pay</title>
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/main.js"></script>
+</head>
+<body class="page-withdraw">
+  <div class="topbar"><a class="back" href="dashboard.html">←</a><div class="brand">Withdraw</div></div>
+  <main class="container">
+    <section class="card">
+      <h2>Withdraw</h2>
+      <p>Minimum Withdraw: <strong>$0.10</strong></p>
+      <form id="withdrawForm">
+        <label>TON Wallet Address<input name="address" required></label>
+        <label>Amount<input name="amount" type="number" step="0.01" required></label>
+        <button class="btn gradient" type="submit">Submit Withdraw</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Withdraw History</h3>
+      <div id="withdrawHistory"></div>
+    </section>
+  </main>
+</body>
+</html>
