@@ -1,26 +1,20 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Withdraw History — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-</head>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Withdraw History</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="container">
-    <div class="topbar"><div class="brand"><div class="logo">📜</div><h1>Withdraw History</h1></div></div>
-    <main>
-      <section class="card"><ul id="history" class="list"></ul></section>
-    </main>
+<div class="app"><div class="container">
+  <div class="header"><div class="logo">Withdraw History</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
+  <div class="card">
+    <h3 class="huge">My Withdraw Requests</h3>
+    <ul id="myWithdrawList" style="list-style:none;padding:0"></ul>
   </div>
+</div></div>
 
-  <script>
-    (function(){
-      const cur = JSON.parse(localStorage.getItem('acp_user')||'null'); if(!cur) return location.href='login.html';
-      const db = JSON.parse(localStorage.getItem('acp_db_v1')||'{}'); const list = document.getElementById('history');
-      (db.withdraws||[]).filter(w=>w.email===cur.email).forEach(w=>{ const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — $${Number(w.amount).toFixed(4)} — ${w.status}`; list.appendChild(li); });
-    })();
-  </script>
+<script type="module">
+import { db, ref, get } from './js/firebase.js';
+const UID = localStorage.getItem('uid'); if(!UID) location.href='login.html';
+async function loadWithdraws(){ const list=document.getElementById('myWithdrawList'); list.innerHTML='Loading...'; const snap=await get(ref(db,'withdraws')); list.innerHTML=''; if(!snap.exists()){ list.innerHTML='<li class="small-muted">No withdraws</li>'; return; } const ws = snap.val(); const items = Object.keys(ws).filter(k=>ws[k].uid===UID).reverse(); if(!items.length){ list.innerHTML='<li class="small-muted">No withdraws</li>'; return; } for(const id of items){ const w=ws[id]; const li=document.createElement('li'); li.className='list-item'; li.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>$${Number(w.amount).toFixed(4)}</strong><div class="small-muted">${w.address} • ${w.status}</div></div><div class="small-muted">${new Date(w.ts).toLocaleString()}</div></div>`; list.appendChild(li); } }
+loadWithdraws();
+</script>
 </body>
 </html>
