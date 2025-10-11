@@ -1,41 +1,49 @@
 // js/earn.js
 import { db } from "./firebase.js";
-import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const username = localStorage.getItem("currentUser");
+const captchaInput = document.getElementById("captchaInput");
+const submitBtn = document.getElementById("submitBtn");
+const adFrame = document.getElementById("adFrame");
+const rewardDisplay = document.getElementById("rewardDisplay");
 
-async function rewardUser(amount) {
-  const userRef = ref(db, "users/" + username);
-  const snapshot = await get(userRef);
-  if (snapshot.exists()) {
-    const currentBalance = snapshot.val().balance || 0;
-    await update(userRef, { balance: currentBalance + amount });
-  }
+let captchaCode = "";
+let currentUserEmail = localStorage.getItem("userEmail");
+
+function generateCaptcha() {
+  captchaCode = Math.random().toString(36).substring(2, 8);
+  document.getElementById("captchaText").textContent = captchaCode;
 }
 
-// Watch Ads
-document.getElementById("watchAdsBtn")?.addEventListener("click", () => {
-  const adsUrl = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
-  window.open(adsUrl, "_blank");
-  setTimeout(() => {
-    rewardUser(0.00015);
-    alert("✅ Ads watched, $0.00015 added!");
-  }, 5000);
-});
+generateCaptcha();
 
-// Captcha
-document.getElementById("captchaForm")?.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const answer = document.getElementById("captchaInput").value;
-  const correct = document.getElementById("captchaText").textContent;
-  if (answer === correct) {
-    const adsUrl = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
-    window.open(adsUrl, "_blank");
-    setTimeout(() => {
-      rewardUser(0.0002);
-      alert("🎯 Captcha complete, $0.0002 added!");
+submitBtn.addEventListener("click", async () => {
+  const userValue = captchaInput.value.trim();
+  if (userValue === captchaCode) {
+    rewardDisplay.textContent = "✅ Captcha verified! Opening ad...";
+    adFrame.src = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
+
+    // Wait 5 seconds to reward
+    setTimeout(async () => {
+      rewardDisplay.textContent = "🎉 You earned $0.0002 for captcha!";
+      await updateBalance(0.0002);
+      generateCaptcha();
     }, 5000);
   } else {
-    alert("❌ Wrong captcha!");
+    rewardDisplay.textContent = "❌ Incorrect Captcha. Try again.";
+    generateCaptcha();
   }
 });
+
+async function updateBalance(amount) {
+  const usersRef = collection(db, "users");
+  const users = await getDocs(usersRef);
+  users.forEach(async (userDoc) => {
+    if (userDoc.data().email === currentUserEmail) {
+      const userRef = doc(db, "users", userDoc.id);
+      await updateDoc(userRef, {
+        balance: (userDoc.data().balance || 0) + amount
+      });
+    }
+  });
+}
