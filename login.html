@@ -17,26 +17,26 @@
   </div>
 
   <script type="module">
-    import { auth } from './js/firebase-init.js';
-    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
-    import { getDoc, doc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-    import { db } from './js/firebase-init.js';
+    import { db, ref, get } from './js/firebase.js';
 
     const form = document.getElementById('loginForm');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const email = document.getElementById('l_email').value.trim().toLowerCase();
       const password = document.getElementById('l_password').value.trim();
-      try{
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        const uid = cred.user.uid;
-        const udoc = await getDoc(doc(db,'users',uid));
-        if(!udoc.exists()) throw new Error('User doc missing');
-        const data = udoc.data();
-        if(data.banned) { alert('Account suspended'); return; }
-        localStorage.setItem('uid', uid);
-        window.location.href = 'dashboard.html';
-      }catch(err){ alert('Login failed: ' + err.message); }
+
+      const usersSnap = await get(ref(db,'users'));
+      if(!usersSnap.exists()){ return alert('No users yet'); }
+      const users = usersSnap.val();
+      for(const k in users){
+        if(users[k].email === email && users[k].password === password){
+          localStorage.setItem('uid', k);
+          alert('Login successful');
+          window.location.href = 'dashboard.html';
+          return;
+        }
+      }
+      alert('Invalid email or password');
     });
   </script>
 </body>
