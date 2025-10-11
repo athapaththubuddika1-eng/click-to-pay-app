@@ -2,54 +2,50 @@
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="app">
-    <div class="container">
-      <div class="header">
-        <div class="logo">Dashboard</div>
-        <div><button id="logoutBtn" class="button btn-ghost">Logout</button></div>
-      </div>
+<div class="app"><div class="container">
+  <div class="header">
+    <div class="logo">Dashboard</div>
+    <div><button id="logoutBtn" class="button btn-ghost">Logout</button></div>
+  </div>
 
-      <div class="card">
-        <h3 class="huge">Welcome, <span id="username">—</span></h3>
-        <p class="small">Balance: <strong id="userBalance">$0.000000</strong></p>
-        <div style="margin-top:12px">
-          <a href="earn.html" class="button btn-primary">Earn</a>
-          <a href="withdraw.html" class="button btn-ghost">Withdraw</a>
-          <a href="referral.html" class="button btn-green">Referral</a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h4 class="huge">My Stats</h4>
-        <p class="small">Referrals: <span id="myReferrals">0</span></p>
-        <p class="small">Total Withdrawal Requests: <span id="myWithdraws">0</span></p>
-      </div>
+  <div class="card">
+    <h3 class="huge">Welcome, <span id="username">—</span></h3>
+    <p class="small">Balance: <strong id="userBalance">$0.000000</strong></p>
+    <div style="margin-top:12px">
+      <a href="earn.html" class="button btn-primary">Earn 🎯</a>
+      <a href="tasks.html" class="button btn-ghost">Tasks ✅</a>
+      <a href="withdraw.html" class="button btn-green">Withdraw 💸</a>
+      <a href="referral.html" class="button btn-ghost">Referral 🔗</a>
     </div>
   </div>
 
-  <script type="module">
-    import { db, ref, get } from './js/firebase.js';
+  <div class="card">
+    <h4 class="huge">My Stats</h4>
+    <p class="small">Referrals: <span id="myReferrals">0</span></p>
+    <p class="small">Pending Withdraws: <span id="myWithdraws">0</span></p>
+  </div>
+</div></div>
 
-    async function loadProfile(){
-      const uid = localStorage.getItem('uid');
-      if(!uid){ location.href='login.html'; return; }
-      const uSnap = await get(ref(db,`users/${uid}`));
-      if(!uSnap.exists()) { alert('User not found'); return; }
-      const data = uSnap.val();
-      document.getElementById('username').innerText = data.username || data.email;
-      document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
-      document.getElementById('myReferrals').innerText = data.referrals || 0;
+<script type="module">
+import { db, ref, get } from './js/firebase.js';
+async function loadProfile(){
+  const uid = localStorage.getItem('uid'); if(!uid) { location.href='login.html'; return; }
+  const uSnap = await get(ref(db,`users/${uid}`));
+  if(!uSnap.exists()){ alert('User not found'); return; }
+  const data = uSnap.val();
+  document.getElementById('username').innerText = data.username || data.email;
+  document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
+  document.getElementById('myReferrals').innerText = data.referrals || 0;
 
-      // count withdraws
-      const wSnap = await get(ref(db,'withdraws'));
-      if(wSnap.exists()){
-        const ws = wSnap.val();
-        const my = Object.keys(ws).filter(k => ws[k].uid === uid);
-        document.getElementById('myWithdraws').innerText = my.length;
-      } else document.getElementById('myWithdraws').innerText = 0;
-    }
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('uid'); location.href='index.html'; });
-    loadProfile();
-  </script>
+  const wSnap = await get(ref(db,'withdraws'));
+  if(wSnap.exists()){
+    const ws = wSnap.val();
+    const my = Object.keys(ws).filter(k => ws[k].uid === uid && ws[k].status === 'pending');
+    document.getElementById('myWithdraws').innerText = my.length;
+  } else document.getElementById('myWithdraws').innerText = 0;
+}
+document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('uid'); location.href='index.html'; });
+loadProfile();
+</script>
 </body>
 </html>
