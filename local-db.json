@@ -7,12 +7,24 @@
       "balance": 0.12,
       "referralCode": "REFADMIN",
       "referrals": [],
-      "banned": false
+      "banned": false,
+      "address": ""
     }
   ],
   "tasks": [
-    { "id": "T1","title":"Visit sponsor","url":"https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa","amount":0.0001 }
+    {
+      "id": "TASK1",
+      "title": "Visit Sponsor",
+      "url": "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa",
+      "amount": 0.0001
+    }
   ],
   "withdraws": [],
-  "settings": { "minWithdraw":0.1, "watchReward":0.0001, "captchaReward":0.0002, "referralBonus":0.005 }
+  "settings": {
+    "minWithdraw": 0.1,
+    "watchReward": 0.0001,
+    "captchaReward": 0.0002,
+    "referralBonus": 0.005,
+    "dailyWithdrawLimit": 1
+  }
 }
