@@ -1,36 +1,38 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Earn - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Earn</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script><script src="js/earn.js" defer></script></head>
 <body>
-  <div class="topbar container">
-    <div class="brand">
-      <div class="logo">🎯</div>
-      <div class="title">Earn</div>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo">🎯</div><h1>Earn</h1></div>
+      <div class="nav"><a href="dashboard.html">Dashboard</a><a href="tasks.html">Tasks</a></div>
+    </div>
+
+    <main>
+      <section class="card">
+        <h3>Watch Ads</h3>
+        <p class="lead">Tap ▶ to open the embedded ad. Wait 5s, then claim reward.</p>
+        <button id="watchBtn" class="btn btn-primary">▶ Watch Ad</button>
+      </section>
+
+      <section class="card">
+        <h3>Captcha + Ad</h3>
+        <p class="lead">Type the word <strong>human</strong> then submit to open ad and earn more.</p>
+        <form id="captchaForm">
+          <input id="captchaInput" class="input" placeholder="Type 'human'"/>
+          <button class="btn btn-primary" id="captchaBtn">Submit + Open</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- modal -->
+    <div id="adModal" class="modal">
+      <div class="modal-card">
+        <div id="adFrame"></div>
+        <div style="margin-top:12px"><div id="adCountdown" style="font-size:20px">5</div></div>
+        <div style="margin-top:12px"><button id="claimReward" class="btn btn-primary" disabled>Claim Reward</button> <button id="closeAd" class="btn btn-ghost">Close</button></div>
+      </div>
     </div>
   </div>
-
-  <main class="container">
-    <div class="card small">
-      <h3>Watch Ads</h3>
-      <p>Reward: <strong>$0.0001</strong></p>
-      <div id="adTimer" class="muted"></div>
-      <button id="watchAdBtn" class="btn btn-primary">▶ Watch Ad</button>
-    </div>
-
-    <div class="card small">
-      <h3>Captcha + Ad</h3>
-      <label><input id="captchaBox" type="checkbox"> I'm human</label>
-      <div id="adTimer2" class="muted"></div>
-      <button id="captchaSubmit" class="btn btn-primary">Submit + Open Ad</button>
-    </div>
-  </main>
-
-  <script>window.ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';</script>
-  <script src="js/main.js"></script>
-  <script src="js/earn.js"></script>
 </body>
 </html>
