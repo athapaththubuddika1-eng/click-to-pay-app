@@ -1,36 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚙️ Admin Panel - AdsClickPay</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .admin-wrap{max-width:720px;margin:22px auto;padding:18px;border-radius:12px;background:linear-gradient(180deg,#071026,#061221);color:#e6f0fb}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .list{list-style:none;padding:0;margin:0}
+    .list li{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+    .small{font-size:13px;color:#9fb6c9}
+    .admin-section{margin-top:12px}
+    @media(max-width:720px){ .grid2{grid-template-columns:1fr} }
+  </style>
 </head>
-<body class="dark">
-
-  <div id="adminLogin" class="admin-container">
-    <h2>🔐 Admin Login</h2>
-    <input type="email" id="adminEmail" placeholder="Enter admin email" />
-    <input type="password" id="adminPass" placeholder="Enter password" />
-    <button id="adminLoginBtn">🚪 Login</button>
-  </div>
-
-  <div id="adminPanel" class="admin-container" style="display:none;">
-    <h2>🧑‍💼 Welcome Admin</h2>
-
-    <div class="admin-box">
-      <button id="addTaskBtn">➕ Add Task</button>
-      <button id="removeTaskBtn">🗑️ Remove Task</button>
-      <button id="banBtn">🚫 Ban User</button>
-      <button id="unbanBtn">✅ Unban User</button>
+<body>
+  <div class="admin-wrap">
+    <h2>🧑‍💼 Admin Panel</h2>
+    <div id="loginBox">
+      <p class="small">Admin login (your admin email/password)</p>
+      <input id="adminEmail" class="input" placeholder="Admin email" />
+      <input id="adminPass" class="input" placeholder="Password" type="password" />
+      <button id="adminLoginBtn" class="btn-primary btn-wide">🔐 Login as Admin</button>
     </div>
 
-    <form id="taskForm" style="display:none; margin-top:20px;">
-      <input type="text" id="taskTitle" placeholder="Task Title" required />
-      <input type="text" id="taskLink" placeholder="Task Link" required />
-      <input type="number" id="taskAmount" placeholder="Amount (TON)" required />
-      <button type="submit">📤 Submit Task</button>
-    </form>
+    <div id="panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Welcome, Admin</strong><div class="small" id="adminEmailShow"></div></div>
+        <div><button id="logoutAdmin" class="btn-ghost">Logout</button></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Add balance to user</h4>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="addEmail" class="input" placeholder="User email" />
+          <input id="addAmount" class="input" placeholder="Amount (e.g. 0.1)" />
+          <button id="doAdd" class="btn-primary">➕ Add</button>
+        </div>
+      </div>
+
+      <div class="admin-section grid2">
+        <div>
+          <h4>Pending Withdraws</h4>
+          <ul id="withdrawList" class="list"></ul>
+        </div>
+        <div>
+          <h4>Tasks</h4>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="taskTitle" class="input" placeholder="Title" />
+            <input id="taskUrl" class="input" placeholder="URL" />
+            <input id="taskAmt" class="input" placeholder="Amount" />
+            <button id="addTaskBtn" class="btn-primary">Add</button>
+          </div>
+          <ul id="taskList" class="list"></ul>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Users</h4>
+        <ul id="userList" class="list"></ul>
+      </div>
+    </div>
   </div>
 
   <script src="js/admin.js"></script>
