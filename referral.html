@@ -1,36 +1,17 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Referral - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Referral</title><link rel="stylesheet" href="css/style.css"><script src="js/referral.js" defer></script></head>
 <body>
-  <div class="topbar container">
-    <div class="brand"><div class="logo">🔗</div><div class="title">Referral</div></div>
+  <div class="container">
+    <div class="topbar"><div class="brand"><div class="logo">🔗</div><h1>Referral</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <main>
+      <section class="card small">
+        <h3>Your Referral</h3>
+        <div id="code" class="ref-code">—</div>
+        <div style="margin-top:10px"><input id="refLink" class="input" readonly /><button id="copyRef" class="btn">Copy</button></div>
+        <p id="refInfo" class="muted"></p>
+      </section>
+    </main>
   </div>
-
-  <main class="container small card">
-    <h3>Your Referral</h3>
-    <p>Code: <span id="refCode">-</span></p>
-    <div class="copybox">
-      <input id="refLink" class="input" readonly />
-      <button id="copyRef" class="btn">Copy Link</button>
-    </div>
-    <p id="refHistory" class="muted"></p>
-  </main>
-
-  <script src="js/main.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const cur = currentUser(); if(!cur) { window.location.href='login.html'; return; }
-      const u = APP.DBDATA.users[cur.email];
-      document.getElementById('refCode').innerText = u.referralCode;
-      const link = APP.getReferralLinkFor(cur.email);
-      document.getElementById('refLink').value = link;
-      document.getElementById('copyRef').addEventListener('click', ()=>{ navigator.clipboard.writeText(link); alert('Copied'); });
-      document.getElementById('refHistory').innerText = 'Referrals: ' + (u.referrals?.length||0);
-    });
-  </script>
 </body>
 </html>
