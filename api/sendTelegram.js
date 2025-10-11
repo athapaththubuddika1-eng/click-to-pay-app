@@ -1,21 +1,18 @@
-// Node serverless function for Vercel - sends message to admin chat
+// serverless for Vercel - POST { text: "..." }
 const fetch = require('node-fetch');
 module.exports = async (req, res) => {
-  const BOT_TOKEN = process.env.BOT_TOKEN;
-  const BOT_CHAT_ID = process.env.BOT_CHAT_ID;
-  if(!BOT_TOKEN || !BOT_CHAT_ID) return res.status(500).json({ error: 'Bot not configured' });
   try {
-    const body = req.body || {};
-    const message = body.message || '';
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: BOT_CHAT_ID, text: message, parse_mode: 'HTML' })
-    });
+    if(req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    const { text } = req.body || {};
+    if(!text) return res.status(400).json({ error: 'Missing text' });
+    const token = process.env.BOT_TOKEN;
+    const chatId = process.env.BOT_CHAT_ID;
+    if(!token || !chatId) return res.status(500).json({ error: 'Missing env' });
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }) });
     const data = await resp.json();
-    res.status(200).json({ ok: true, data });
-  } catch (err) {
-    res.status(500).json({ error: err.toString() });
+    return res.status(200).json({ ok: true, data });
+  } catch(err){
+    return res.status(500).json({ error: err.message });
   }
 };
