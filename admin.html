@@ -1,106 +1,197 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin Panel — Ads Click Pay</title>
-<link rel="stylesheet" href="css/style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | AdsClickPay</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #0b0c10;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #1f2833;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #45a29e;
+      width: 90%;
+      max-width: 450px;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 16px;
+    }
+    button {
+      background: #45a29e;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #66fcf1; color: black; }
+    h2, h3 { text-align: center; }
+    .task, .withdraw {
+      background: #0b0c10;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .task a { color: #66fcf1; }
+    .divider {
+      height: 2px;
+      background: #45a29e;
+      margin: 15px 0;
+    }
+  </style>
 </head>
 <body>
-<div class="app"><div class="container">
-  <div class="header"><div class="logo">Admin Panel</div><div class="small muted">Only admins</div></div>
 
-  <div id="loginCard" class="card">
-    <p class="small">Admin sign in</p>
-    <input id="admin_email" class="input" placeholder="Admin email" />
-    <input id="admin_pass" class="input" placeholder="Admin password" type="password" />
-    <div class="row" style="margin-top:8px">
-      <button id="adminLogin" class="button btn-primary">🔐 Login</button>
-      <button id="showDemoCreds" class="button btn-ghost">ℹ️ Demo</button>
-    </div>
-  </div>
+<div class="container" id="loginBox">
+  <h2>🔐 Admin Login</h2>
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <p id="loginMsg"></p>
+</div>
 
-  <div id="adminArea" style="display:none">
-    <div class="card">
-      <h4 class="huge">Withdraw Requests</h4>
-      <div id="withdrawsList" style="max-height:360px;overflow:auto"></div>
-    </div>
+<div class="container" id="panelBox" style="display:none;">
+  <h2>👨‍💻 Admin Panel</h2>
 
-    <div class="card">
-      <h4 class="huge">Add Balance (by Email)</h4>
-      <div class="row">
-        <input id="addEmail" class="input" placeholder="User email" />
-        <input id="addAmt" class="input" placeholder="Amount" />
-      </div>
-      <div style="margin-top:8px"><button id="doAdd" class="button btn-primary">➕ Add Balance</button></div>
-    </div>
+  <h3>➕ Add Task</h3>
+  <input type="text" id="taskTitle" placeholder="Task Title">
+  <input type="url" id="taskLink" placeholder="Task Link">
+  <input type="number" id="taskAmount" placeholder="Reward ($)">
+  <button id="addTaskBtn">Add Task</button>
 
-    <div class="card">
-      <h4 class="huge">Tasks</h4>
-      <div class="row">
-        <input id="taskTitle" class="input" placeholder="Title" />
-        <input id="taskUrl" class="input" placeholder="URL" />
-        <input id="taskAmt" class="input" placeholder="Amount" />
-      </div>
-      <div style="margin-top:8px"><button id="addTask" class="button btn-primary">➕ Add Task</button></div>
-      <ul id="taskList" style="margin-top:12px;padding-left:0"></ul>
-    </div>
-  </div>
+  <div class="divider"></div>
 
-</div></div>
+  <h3>💸 Withdraw Requests</h3>
+  <div id="withdrawList">Loading...</div>
+
+  <div class="divider"></div>
+
+  <h3>📈 Add Balance by Email</h3>
+  <input type="email" id="userEmail" placeholder="User Email">
+  <input type="number" id="addAmount" placeholder="Amount ($)">
+  <button id="addBalanceBtn">Add Balance</button>
+
+  <button id="logoutBtn" style="background:#c23b22;margin-top:20px;">Logout</button>
+</div>
 
 <script type="module">
-import { db, ref, get, push, update, set } from './js/firebase.js';
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { getDatabase, ref, push, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-const ADMIN_EMAIL = 'hasanbuddika1@gmail.com';
-const ADMIN_PASS = 'Aabbcc.123';
-const BOT_ENDPOINT = '/api/sendTelegram';
+  const firebaseConfig = {
+    apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
+    authDomain: "adsclickpay-b4870.firebaseapp.com",
+    databaseURL: "https://adsclickpay-b4870-default-rtdb.firebaseio.com/",
+    projectId: "adsclickpay-b4870",
+    storageBucket: "adsclickpay-b4870.firebasestorage.app",
+    messagingSenderId: "315468866481",
+    appId: "1:315468866481:web:3ab95661be3939b8d7d390",
+    measurementId: "G-3ZZ9K97QWJ"
+  };
 
-document.getElementById('showDemoCreds').addEventListener('click', ()=>alert(`Admin: ${ADMIN_EMAIL}\nPass: ${ADMIN_PASS}`));
-document.getElementById('adminLogin').addEventListener('click', async ()=>{
-  const em = document.getElementById('admin_email').value.trim().toLowerCase();
-  const pw = document.getElementById('admin_pass').value.trim();
-  if(em===ADMIN_EMAIL && pw===ADMIN_PASS){ document.getElementById('loginCard').style.display='none'; document.getElementById('adminArea').style.display='block'; loadWithdraws(); loadTasks(); } else alert('Invalid admin credentials');
-});
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-async function loadWithdraws(){
-  const snap = await get(ref(db,'withdraws')); const list=document.getElementById('withdrawsList'); list.innerHTML='';
-  if(!snap.exists()){ list.innerHTML='<div class="small-muted">No withdraws</div>'; return; }
-  const ws = snap.val(); const keys = Object.keys(ws).reverse();
-  for(const id of keys){
-    const w = ws[id];
-    const div = document.createElement('div'); div.className='list-item';
-    div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${w.email||w.uid}</strong> • $${Number(w.amount).toFixed(4)}<div class="small-muted">${w.address||''} • ${w.status}</div></div><div style="display:flex;gap:8px"><button class="button btn-primary approve" data-id="${id}">✅ Approve</button><button class="button btn-ghost reject" data-id="${id}">❌ Reject</button></div></div>`;
-    list.appendChild(div);
+  const loginBox = document.getElementById("loginBox");
+  const panelBox = document.getElementById("panelBox");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginMsg = document.getElementById("loginMsg");
+
+  loginBtn.onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      loginBox.style.display = "none";
+      panelBox.style.display = "block";
+      loadWithdraws();
+    } catch (e) {
+      loginMsg.innerText = "❌ Invalid credentials!";
+    }
+  };
+
+  document.getElementById("logoutBtn").onclick = async () => {
+    await signOut(auth);
+    panelBox.style.display = "none";
+    loginBox.style.display = "block";
+  };
+
+  // Add Task
+  document.getElementById("addTaskBtn").onclick = async () => {
+    const title = document.getElementById("taskTitle").value;
+    const link = document.getElementById("taskLink").value;
+    const amount = document.getElementById("taskAmount").value;
+    if (!title || !link || !amount) return alert("Please fill all fields!");
+    await push(ref(db, "tasks"), { title, link, amount });
+    alert("✅ Task added successfully!");
+  };
+
+  // Add Balance
+  document.getElementById("addBalanceBtn").onclick = async () => {
+    const email = document.getElementById("userEmail").value.replaceAll(".", "_");
+    const amount = parseFloat(document.getElementById("addAmount").value);
+    if (!email || !amount) return alert("Enter email and amount!");
+
+    const userRef = ref(db, "users/" + email);
+    const snapshot = await get(userRef);
+    let balance = 0;
+    if (snapshot.exists()) balance = snapshot.val().balance || 0;
+    await update(userRef, { balance: balance + amount });
+    alert("💰 Balance updated!");
+  };
+
+  // Withdraw Requests
+  async function loadWithdraws() {
+    const withdrawRef = ref(db, "withdraws");
+    onValue(withdrawRef, snapshot => {
+      const container = document.getElementById("withdrawList");
+      container.innerHTML = "";
+      if (!snapshot.exists()) {
+        container.innerHTML = "<p>No withdraw requests</p>";
+        return;
+      }
+      const data = snapshot.val();
+      Object.entries(data).forEach(([key, w]) => {
+        const div = document.createElement("div");
+        div.classList.add("withdraw");
+        div.innerHTML = `
+          <b>${w.email}</b> requested <b>$${w.amount}</b><br>
+          <button onclick="approveWithdraw('${key}')">✅ Approve</button>
+          <button onclick="rejectWithdraw('${key}')">❌ Reject</button>
+        `;
+        container.appendChild(div);
+      });
+    });
   }
-  list.querySelectorAll('.approve').forEach(b=>b.addEventListener('click', async e=>{ await approveWithdraw(e.target.dataset.id); await loadWithdraws(); }));
-  list.querySelectorAll('.reject').forEach(b=>b.addEventListener('click', async e=>{ await rejectWithdraw(e.target.dataset.id); await loadWithdraws(); }));
-}
 
-async function approveWithdraw(id){
-  await update(ref(db,`withdraws/${id}`), { status:'approved', processedAt:new Date().toISOString() });
-  // notify via serverless
-  const w = (await get(ref(db,`withdraws/${id}`))).val();
-  try{ await fetch(BOT_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ text:`✅ Withdraw Approved\nUser: ${w.email||w.uid}\nAmount: $${w.amount}\nAddress: ${w.address}` })}); }catch(e){ console.warn(e); }
-  alert('Approved');
-}
+  window.approveWithdraw = async (key) => {
+    await remove(ref(db, "withdraws/" + key));
+    alert("✅ Withdraw approved!");
+  };
 
-async function rejectWithdraw(id){
-  const wSnap = (await get(ref(db,`withdraws/${id}`))).val();
-  if(!wSnap) return alert('Not found');
-  // refund
-  const usersSnap = await get(ref(db,'users')); if(usersSnap.exists()){
-    const users=usersSnap.val(); for(const k in users){ if(users[k].email===wSnap.email){ const cur=Number(users[k].balance||0); await update(ref(db,`users/${k}`), { balance: cur + Number(wSnap.amount) }); break; } }
-  }
-  await update(ref(db,`withdraws/${id}`), { status:'rejected', processedAt:new Date().toISOString() });
-  alert('Rejected and refunded');
-}
-
-document.getElementById('doAdd').addEventListener('click', async ()=>{ const email=document.getElementById('addEmail').value.trim().toLowerCase(); const amt=Number(document.getElementById('addAmt').value||0); if(!email||!amt) return alert('Fill'); const usersSnap=await get(ref(db,'users')); if(!usersSnap.exists()) return alert('No users'); const users=usersSnap.val(); let found=null; for(const k in users){ if(users[k].email===email){ found={id:k,data:users[k]}; break; } } if(!found) return alert('User not found'); await update(ref(db,`users/${found.id}`), { balance: Number(found.data.balance||0) + amt }); alert('Balance added'); });
-
-async function loadTasks(){ const tSnap=await get(ref(db,'tasks')); const tl=document.getElementById('taskList'); tl.innerHTML=''; if(!tSnap.exists()){ tl.innerHTML='<div class="small-muted">No tasks</div>'; return; } const ts=tSnap.val(); for(const k in ts){ const t=ts[k]; const li=document.createElement('li'); li.className='list-item'; li.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${t.title}</strong> • $${t.amount}</div><div><button class="button btn-ghost rm" data-id="${k}">🗑 Remove</button></div></div>`; tl.appendChild(li); } tl.querySelectorAll('.rm').forEach(b=>b.addEventListener('click', async e=>{ await set(ref(db,`tasks/${e.target.dataset.id}`), null); loadTasks(); })); }
-
-document.getElementById('addTask').addEventListener('click', async ()=>{ const title=document.getElementById('taskTitle').value.trim(); const url=document.getElementById('taskUrl').value.trim(); const amt=Number(document.getElementById('taskAmt').value||0); if(!title||!url||!amt) return alert('Fill'); await push(ref(db,'tasks'), { title, url, amount: amt, createdAt:new Date().toISOString() }); alert('Task added'); loadTasks(); });
-
+  window.rejectWithdraw = async (key) => {
+    await remove(ref(db, "withdraws/" + key));
+    alert("❌ Withdraw rejected!");
+  };
 </script>
 </body>
 </html>
