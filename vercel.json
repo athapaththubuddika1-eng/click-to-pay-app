@@ -1,19 +1,14 @@
 {
   "version": 2,
+  "public": true,
   "builds": [
-    {
-      "src": "api/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "css/*.css", "use": "@vercel/static" },
+    { "src": "js/*.js", "use": "@vercel/static" }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.js"
-    }
-  ]
+  "env": {
+    "BOT_TOKEN": "@adsclickpay_bot_token",
+    "BOT_CHAT_ID": "@adsclickpay_chat_id",
+    "BOT_USERNAME": "@adsclickpay_bot_username"
+  }
 }
