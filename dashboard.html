@@ -1,81 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard | AdsClickPay</title>
-<style>
-  body {
-    background: #0b0c10;
-    color: #fff;
-    font-family: "Poppins", sans-serif;
-    margin: 0; padding: 20px;
-    text-align: center;
-  }
-  .card {
-    background: #1f2833;
-    border-radius: 15px;
-    box-shadow: 0 0 15px #45a29e;
-    padding: 20px;
-    margin: 15px auto;
-    width: 90%;
-    max-width: 400px;
-  }
-  button {
-    background: #45a29e;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 15px;
-    margin-top: 10px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  button:hover { background: #66fcf1; color: black; }
-</style>
-</head>
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <h2>👋 Welcome Back!</h2>
-  <div class="card">
-    <h3>💰 Your Balance:</h3>
-    <h1 id="balance">$0.0000</h1>
-    <p>Referrals: <b id="referrals">0</b></p>
+<div class="app"><div class="container">
+  <div class="header">
+    <div class="logo">Dashboard</div>
+    <div><button id="logoutBtn" class="button btn-ghost">Logout</button></div>
   </div>
+
   <div class="card">
-    <button onclick="window.location.href='earn.html'">🎯 Earn Tasks</button>
-    <button onclick="window.location.href='withdraw.html'">💸 Withdraw</button>
-    <button onclick="window.location.href='profile.html'">👤 Profile</button>
+    <h3 class="huge">Welcome, <span id="username">—</span></h3>
+    <p class="small">Balance: <strong id="userBalance">$0.000000</strong></p>
+    <div style="margin-top:12px">
+      <a href="earn.html" class="button btn-primary">Earn 🎯</a>
+      <a href="tasks.html" class="button btn-ghost">Tasks ✅</a>
+      <a href="withdraw.html" class="button btn-green">Withdraw 💸</a>
+      <a href="referral.html" class="button btn-ghost">Referral 🔗</a>
+    </div>
   </div>
+
+  <div class="card">
+    <h4 class="huge">My Stats</h4>
+    <p class="small">Referrals: <span id="myReferrals">0</span></p>
+    <p class="small">Pending Withdraws: <span id="myWithdraws">0</span></p>
+  </div>
+</div></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
-    authDomain: "adsclickpay-b4870.firebaseapp.com",
-    databaseURL: "https://adsclickpay-b4870-default-rtdb.firebaseio.com/",
-    projectId: "adsclickpay-b4870",
-    storageBucket: "adsclickpay-b4870.firebasestorage.app",
-    messagingSenderId: "315468866481",
-    appId: "1:315468866481:web:3ab95661be3939b8d7d390"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const email = localStorage.getItem("userEmail");
-  if (!email) window.location.href = "login.html";
-
-  const safeEmail = email.replaceAll(".", "_");
-  const userRef = ref(db, "users/" + safeEmail);
-  onValue(userRef, snapshot => {
-    if (snapshot.exists()) {
+import { db, ref, get, onValue } from './js/firebase.js';
+async function loadProfile(){
+  const email = localStorage.getItem('userEmail'); if(!email) { location.href='login.html'; return; }
+  const safe = email.replaceAll('.','_');
+  const uRef = ref(db,`users/${safe}`);
+  onValue(uRef, snapshot => {
+    if(snapshot.exists()){
       const data = snapshot.val();
-      document.getElementById("balance").innerText = "$" + (data.balance || 0).toFixed(4);
-      document.getElementById("referrals").innerText = data.referrals || 0;
+      document.getElementById('username').innerText = data.username || data.email;
+      document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
+      document.getElementById('myReferrals').innerText = data.referrals || 0;
     }
   });
+  const wRef = ref(db,'withdraws/' + safe);
+  onValue(wRef, snap => { document.getElementById('myWithdraws').innerText = snap.exists() ? Object.keys(snap.val()).length : 0; });
+}
+document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('userEmail'); location.href='index.html'; });
+loadProfile();
 </script>
 </body>
 </html>
