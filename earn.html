@@ -1,113 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Earn | AdsClickPay</title>
-<style>
-  body {
-    background: #0b0c10;
-    color: white;
-    font-family: "Poppins", sans-serif;
-    margin: 0; padding: 15px;
-    text-align: center;
-  }
-  .task {
-    background: #1f2833;
-    border-radius: 15px;
-    box-shadow: 0 0 15px #45a29e;
-    padding: 20px;
-    margin-bottom: 15px;
-  }
-  button {
-    background: #45a29e;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 15px;
-    cursor: pointer;
-  }
-  button:hover { background: #66fcf1; color: black; }
-  input {
-    border: none;
-    border-radius: 8px;
-    padding: 8px;
-    text-align: center;
-    margin: 8px 0;
-    width: 100px;
-  }
-</style>
-</head>
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earn</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-<h2>🎯 Earn Tasks</h2>
-<div id="taskList">Loading tasks...</div>
+<div class="app"><div class="container">
+  <div class="header"><div class="logo">Earn</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
+
+  <div class="card center">
+    <h3 class="huge">🎯 Watch Ads & Earn</h3>
+    <p class="small">Captcha + Ad or Watch Ad only</p>
+
+    <div style="margin:12px 0">
+      <div style="display:flex;justify-content:center;align-items:center;gap:8px">
+        <div id="captchaValue" class="small-muted" style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;font-weight:800;letter-spacing:3px">ABCDE</div>
+        <button id="reloadCaptcha" class="button btn-ghost">🔄</button>
+      </div>
+      <input id="captchaInput" class="input" placeholder="Type captcha here" />
+      <button id="submitCaptcha" class="button btn-primary" style="width:100%;margin-top:8px">▶ Submit & Open Ad</button>
+      <button id="watchBtn" class="button btn-green" style="width:100%;margin-top:8px">▶ Watch Ad (No Captcha)</button>
+    </div>
+
+    <p class="small">Captcha reward: <strong>$0.000200</strong> · Ad reward: <strong>$0.000150</strong></p>
+    <p id="status" class="small" style="margin-top:8px"></p>
+  </div>
+</div></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { db, ref, get, update, push } from './js/firebase.js';
+const ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';
+const CAPTCHA_USD = 0.0002;
+const AD_USD = 0.00015;
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
-    authDomain: "adsclickpay-b4870.firebaseapp.com",
-    databaseURL: "https://adsclickpay-b4870-default-rtdb.firebaseio.com/",
-    projectId: "adsclickpay-b4870",
-    storageBucket: "adsclickpay-b4870.firebasestorage.app",
-    messagingSenderId: "315468866481",
-    appId: "1:315468866481:web:3ab95661be3939b8d7d390"
-  };
+function genCaptcha(){ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=''; for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length)); document.getElementById('captchaValue').innerText = s; }
+genCaptcha(); document.getElementById('reloadCaptcha').onclick = genCaptcha;
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+function openAd(url){ try{ if(window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function'){ window.Telegram.WebApp.openLink(url); return; } }catch(e){} window.open(url,'_blank'); }
 
-  const email = localStorage.getItem("userEmail");
-  if (!email) window.location.href = "login.html";
-  const safeEmail = email.replaceAll(".", "_");
+async function addBalance(safe, amount){ const uRef = ref(db,`users/${safe}`); const uSnap = await get(uRef); const cur = Number(uSnap.val().balance||0); await update(uRef, { balance: cur + Number(amount) }); await push(ref(db,'activities'), { uid:safe, type:'earn', amount, ts:new Date().toISOString() }); }
 
-  const taskList = document.getElementById("taskList");
-  const taskRef = ref(db, "tasks");
-
-  onValue(taskRef, snapshot => {
-    taskList.innerHTML = "";
-    if (!snapshot.exists()) {
-      taskList.innerHTML = "<p>No tasks yet.</p>";
-      return;
+document.getElementById('submitCaptcha').addEventListener('click', async ()=>{
+  const email = localStorage.getItem('userEmail'); if(!email){ alert('Login first'); location.href='login.html'; return; }
+  const safe = email.replaceAll('.','_');
+  const typed = (document.getElementById('captchaInput').value||'').trim().toUpperCase();
+  const real = document.getElementById('captchaValue').innerText.trim().toUpperCase();
+  if(!typed){ alert('Type captcha'); return; }
+  if(typed !== real){ alert('Wrong captcha'); genCaptcha(); return; }
+  openAd(ADS_LINK);
+  document.getElementById('status').innerText = '⏳ Ad opened — counting 5s...';
+  document.getElementById('submitCaptcha').disabled = true;
+  let t=5; const iv=setInterval(async ()=>{
+    t--; document.getElementById('status').innerText = `⏳ Counting ${t}s...`;
+    if(t<0){ clearInterval(iv);
+      try{ await addBalance(safe, CAPTCHA_USD + AD_USD); document.getElementById('status').innerText = `✅ Earned $${(CAPTCHA_USD+AD_USD).toFixed(6)}!`; document.getElementById('submitCaptcha').disabled=false; document.getElementById('captchaInput').value=''; genCaptcha(); }catch(e){ console.error(e); alert('Error awarding'); document.getElementById('submitCaptcha').disabled=false; }
     }
-    const tasks = snapshot.val();
-    Object.entries(tasks).forEach(([key, t]) => {
-      const div = document.createElement("div");
-      div.classList.add("task");
-      div.innerHTML = `
-        <h3>${t.title}</h3>
-        <p>💵 Reward: $${t.amount}</p>
-        <input id="captcha-${key}" placeholder="Type 5 + 2" />
-        <button onclick="verifyCaptcha('${key}', '${t.link}', ${t.amount})">Submit</button>
-      `;
-      taskList.appendChild(div);
-    });
-  });
+  },1000);
+});
 
-  window.verifyCaptcha = async (key, link, amount) => {
-    const input = document.getElementById("captcha-" + key);
-    if (input.value.trim() !== "7") return alert("❌ Wrong captcha!");
-
-    alert("✅ Verified! Opening ad...");
-    const adWindow = window.open(link, "_blank");
-    let counter = 5;
-    const timer = setInterval(async () => {
-      counter--;
-      if (counter <= 0) {
-        clearInterval(timer);
-        if (adWindow) adWindow.close();
-
-        const userRef = ref(db, "users/" + safeEmail);
-        const snapshot = await get(userRef);
-        let balance = 0;
-        if (snapshot.exists()) balance = snapshot.val().balance || 0;
-        await update(userRef, { balance: balance + amount });
-        alert(`🎉 $${amount} added to your balance!`);
-      }
-    }, 1000);
-  };
+document.getElementById('watchBtn').addEventListener('click', async ()=>{
+  const email = localStorage.getItem('userEmail'); if(!email){ alert('Login first'); location.href='login.html'; return; }
+  const safe = email.replaceAll('.','_');
+  openAd(ADS_LINK);
+  document.getElementById('status').innerText = '⏳ Ad opened — counting 5s...'; document.getElementById('watchBtn').disabled=true;
+  let t=5; const iv=setInterval(async ()=>{ t--; document.getElementById('status').innerText = `⏳ Counting ${t}s...`; if(t<0){ clearInterval(iv); try{ await addBalance(safe, AD_USD); document.getElementById('status').innerText = `✅ Earned $${AD_USD.toFixed(6)}!`; document.getElementById('watchBtn').disabled=false; }catch(e){ console.error(e); alert('Error awarding'); } } },1000);
+});
 </script>
 </body>
 </html>
