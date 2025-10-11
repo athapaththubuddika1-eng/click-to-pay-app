@@ -1,9 +1,20 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Tasks</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script></head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tasks — Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+  <script src="js/tasks.js" defer></script>
+</head>
 <body>
   <div class="container">
-    <div class="topbar"><div class="brand"><div class="logo">📝</div><h1>Tasks</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <div class="topbar">
+      <div class="brand"><div class="logo">🧩</div><h1>Tasks</h1></div>
+      <div class="nav"><a href="dashboard.html">Dashboard</a></div>
+    </div>
+
     <main>
       <section class="card">
         <h3>Available Tasks</h3>
@@ -11,39 +22,5 @@
       </section>
     </main>
   </div>
-
-  <script>
-    (function(){
-      const cur = currentUser(); if(!cur) return location.href='login.html';
-      const db = APP.loadDB();
-      const list = document.getElementById('tasksList'); list.innerHTML='';
-      db.tasks.forEach(t=>{
-        const li=document.createElement('li');
-        li.innerHTML = `<strong>${t.title}</strong> — Reward: ${money(t.amount)} <div style="margin-top:8px"><button class="btn" data-url="${t.url}" data-id="${t.id}">Join</button> <button class="btn hidden" data-claim="${t.id}">Claim</button></div>`;
-        list.appendChild(li);
-      });
-      document.querySelectorAll('[data-url]').forEach(b=>{
-        b.addEventListener('click', (e)=>{
-          const id = e.target.dataset.id; const url = e.target.dataset.url;
-          // open URL in same page area (iframe modal) or new tab - we'll open in new tab to avoid framing blocks
-          window.open(url,'_blank');
-          // flip to claim after 5s
-          e.target.innerText = 'Waiting 5s...'; let s=5;
-          const iv = setInterval(()=>{ s--; e.target.innerText = 'Wait ' + s + 's'; if(s<=0){ clearInterval(iv); e.target.style.display='none'; const claim = document.querySelector(`[data-claim="${id}"]`); claim.classList.remove('hidden'); claim.addEventListener('click', ()=>{ claimTask(id); }); } },1000);
-        });
-      });
-      function claimTask(id){
-        const db = APP.loadDB(); const cur = currentUser(); const u = db.users.find(x=>x.email===cur.email);
-        const task = db.tasks.find(t=>t.id===id); if(!task) return alert('Task gone');
-        u.balance = Number(u.balance||0) + Number(task.amount);
-        u.tasksCompleted = (u.tasksCompleted||0) + 1;
-        // remove task
-        db.tasks = db.tasks.filter(t=>t.id!==id);
-        APP.saveDB(db);
-        alert('Task reward added ' + money(task.amount));
-        location.href='dashboard.html';
-      }
-    })();
-  </script>
 </body>
 </html>
