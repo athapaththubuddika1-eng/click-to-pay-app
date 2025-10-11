@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Earn - Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/earn.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body class="page-earn">
+  <div class="topbar">
+    <a class="back" href="dashboard.html">←</a>
+    <div class="brand">Ads Click Pay</div>
+  </div>
+
+  <main class="container">
+    <section class="card">
+      <h2>Watch Ad</h2>
+      <p>Earn $0.0001 per ad watched</p>
+      <button id="watchAdBtn" class="btn gradient">▶ Watch Ad</button>
+      <div id="adCountdown" class="muted"></div>
+      <div id="captchaWrap" class="captcha hidden card">
+        <label><input id="captchaBox" type="checkbox"> I'm not a robot (demo)</label>
+        <button id="captchaSubmit" class="btn primary">Submit + Open Ad</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Captcha Task</h2>
+      <p>Complete captcha then open ad — reward applies</p>
+    </section>
+  </main>
+
+  <footer class="bottom-nav">
+    <a href="index.html">Home</a>
+    <a href="earn.html" class="active">Earn</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="referral.html">Referral</a>
+    <a href="profile.html">Profile</a>
+    <a href="admin.html">Admin</a>
+  </footer>
+</body>
+</html>
