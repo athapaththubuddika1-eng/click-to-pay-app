@@ -1,44 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Earn — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
-    /* small page-specific tweaks */
-    .earn-wrap{max-width:420px;margin:28px auto;padding:20px;border-radius:12px;background:linear-gradient(180deg,#0f172a,#071026);box-shadow:0 10px 40px rgba(2,6,23,0.6);color:#e6f0fb}
-    .captcha-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:12px}
-    #captchaValue{background:#142231;padding:10px 14px;border-radius:10px;font-weight:800;letter-spacing:3px}
-    .hint{color:#9fb6c9;margin-top:10px;font-size:14px}
-    .btn-wide{width:100%;padding:12px;border-radius:12px;border:0;font-weight:800;cursor:pointer}
-    .btn-primary{background:linear-gradient(90deg,#3aa6ff,#00d7a0);color:#042027}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#d7edf5}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earn 💰 | AdsClickPay</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <div class="earn-wrap">
-    <h2 style="margin:0 0 6px">🎯 Earn — Watch Ads</h2>
-    <p style="margin:0 0 14px;color:#9fb6c9">Captcha → ad open (5s) → rewards (captcha + ad)</p>
+<body class="bg-dark text-light flex flex-col items-center justify-center min-h-screen">
+  
+  <!-- 🔹 Back to Dashboard -->
+  <div class="w-full text-center mt-4">
+    <button id="backDashboard" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold shadow-md hover:scale-105 transition">
+      ⬅ Back to Dashboard
+    </button>
+  </div>
 
-    <form id="earnForm">
-      <div class="captcha-row">
-        <div id="captchaValue">ABCDE</div>
-        <button type="button" id="reloadCaptcha" class="btn-ghost" style="padding:8px 10px;border-radius:10px">🔄</button>
+  <!-- 🔹 Earn Section -->
+  <div class="mt-6 text-center p-4 bg-gray-800 rounded-2xl shadow-lg w-11/12 max-w-sm">
+    <h2 class="text-xl font-bold mb-3">🎯 Earn Rewards</h2>
+    <p class="text-gray-300 text-sm mb-3">Complete captcha & watch ad to earn instant rewards!</p>
+
+    <div class="bg-gray-900 p-3 rounded-lg mb-3">
+      <div class="flex justify-between items-center">
+        <span class="font-mono text-lg" id="captchaValue">A7X9Q</span>
+        <button id="reloadCaptcha" class="text-blue-400 text-sm">🔄 Reload</button>
       </div>
-      <input id="captchaInput" class="input" placeholder="Type captcha" autocomplete="off" required />
-      <button id="submitCaptcha" class="btn-wide btn-primary" type="submit" style="margin-top:12px">▶ Submit & Open Ad</button>
-    </form>
-
-    <div style="margin-top:14px">
-      <button id="watchOnly" class="btn-wide btn-ghost">▶ Watch Ad (No Captcha)</button>
+      <input id="captchaInput" type="text" placeholder="Enter captcha" class="mt-2 w-full p-2 rounded bg-gray-700 text-center text-white outline-none" />
     </div>
 
-    <p class="hint">Rewards — Captcha: <strong>$0.00020</strong> + Ad: <strong>$0.00015</strong></p>
+    <button id="submitCaptcha" class="w-full bg-green-600 py-2 rounded-lg mt-2 font-bold hover:bg-green-700 transition">
+      ▶ Submit & Open Ad
+    </button>
 
-    <div id="status" style="margin-top:12px;color:#bfe7d7;font-weight:700"></div>
+    <button id="watchOnly" class="w-full bg-blue-600 py-2 rounded-lg mt-3 font-bold hover:bg-blue-700 transition">
+      ▶ Watch Ad (No Captcha)
+    </button>
+
+    <p id="status" class="mt-4 text-yellow-300 text-sm">⏳ Waiting for captcha...</p>
   </div>
 
   <script src="js/earn.js"></script>
+  <script>
+    // Back to dashboard button
+    document.getElementById("backDashboard").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+  </script>
 </body>
 </html>
