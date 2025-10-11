@@ -6,6 +6,13 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div class="splash" id="splash" style="display:none">
+    <div style="text-align:center">
+      <div class="spinner"></div>
+      <div style="margin-top:12px;color:#fff">Loading...</div>
+    </div>
+  </div>
+
   <div class="app">
     <div class="container">
       <div class="header">
@@ -33,13 +40,13 @@
   </div>
 
   <script type="module">
-    import { db, collection, getDocs } from './js/firebase-init.js';
+    import { db, ref, get } from './js/firebase.js';
     async function loadSummary(){
       try{
-        const usersSnap = await getDocs(collection(db, 'users'));
-        document.getElementById('totalMembers').innerText = usersSnap.size;
-        const wSnap = await getDocs(collection(db,'withdraws'));
-        document.getElementById('totalWithdrawals').innerText = wSnap.size;
+        const usersSnap = await get(ref(db,'users'));
+        const withdrawsSnap = await get(ref(db,'withdraws'));
+        document.getElementById('totalMembers').innerText = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
+        document.getElementById('totalWithdrawals').innerText = withdrawsSnap.exists() ? Object.keys(withdrawsSnap.val()).length : 0;
       }catch(e){ console.warn(e); }
     }
     loadSummary();
