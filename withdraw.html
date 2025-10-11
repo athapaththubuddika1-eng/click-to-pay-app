@@ -2,52 +2,45 @@
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Withdraw</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="app">
-    <div class="container">
-      <div class="header"><div class="logo">Withdraw</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
+<div class="app"><div class="container">
+  <div class="header"><div class="logo">Withdraw</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
 
-      <div class="card">
-        <p class="small">Minimum withdraw: <strong>$0.1</strong></p>
-        <input id="w_amount" class="input" placeholder="Amount (e.g. 0.1)" />
-        <input id="w_address" class="input" placeholder="TON Wallet Address" />
-        <button id="doWithdraw" class="button btn-primary">Request Withdraw</button>
-        <p id="w_status" class="small" style="margin-top:8px"></p>
-      </div>
-    </div>
+  <div class="card">
+    <p class="small">Minimum withdraw: <strong>$0.1</strong></p>
+    <input id="w_amount" class="input" placeholder="Amount (e.g. 0.1)" />
+    <input id="w_address" class="input" placeholder="TON Wallet Address" />
+    <button id="doWithdraw" class="button btn-primary">Request Withdraw</button>
+    <p id="w_status" class="small" style="margin-top:8px"></p>
   </div>
+</div></div>
 
-  <script type="module">
-    import { db, ref, get, push, update } from './js/firebase.js';
+<script type="module">
+import { db, ref, get, push, update } from './js/firebase.js';
+const BOT_NOTIFY_ENDPOINT = '/api/sendTelegram'; // serverless secure notify
+document.getElementById('doWithdraw').addEventListener('click', async ()=>{
+  const uid = localStorage.getItem('uid'); if(!uid){ alert('Login first'); location.href='login.html'; return; }
+  const amount = Number(document.getElementById('w_amount').value || 0);
+  const addr = document.getElementById('w_address').value.trim();
+  if(amount < 0.1){ alert('Minimum is $0.1'); return; }
+  if(!addr){ alert('Enter TON address'); return; }
+  const userRef = ref(db,`users/${uid}`); const uSnap = await get(userRef);
+  if(!uSnap.exists()) return alert('User missing');
+  const curBal = Number(uSnap.val().balance||0);
+  if(curBal < amount) return alert('Not enough balance');
 
-    const BOT_TOKEN = '7776385916:AAHNDwHIehk0FJ1zzdoNV8lNB5qE_6DbPks'; // consider moving server-side
-    const CHAT_ID = '5419054691';
+  // Deduct and create withdraw record
+  await update(userRef, { balance: curBal - amount });
+  const newWRef = push(ref(db,'withdraws'));
+  await set(newWRef, { uid, email: uSnap.val().email, amount, address: addr, status:'pending', ts: new Date().toISOString() });
 
-    document.getElementById('doWithdraw').addEventListener('click', async ()=>{
-      const uid = localStorage.getItem('uid'); if(!uid){ alert('Login first'); location.href='login.html'; return; }
-      const amount = Number(document.getElementById('w_amount').value || 0);
-      const addr = document.getElementById('w_address').value.trim();
-      if(amount < 0.1){ alert('Minimum is $0.1'); return; }
-      if(!addr){ alert('Enter TON address'); return; }
+  document.getElementById('w_status').innerText = '✅ Withdraw requested (pending).';
 
-      const userRef = ref(db,`users/${uid}`);
-      const uSnap = await get(userRef);
-      if(!uSnap.exists()) return alert('User missing');
-      const curBal = Number(uSnap.val().balance || 0);
-      if(curBal < amount) return alert('Not enough balance');
-
-      // deduct and push withdraw request
-      await update(userRef, { balance: curBal - amount });
-      const wRef = ref(db,'withdraws');
-      const newW = await push(wRef, { uid, email: uSnap.val().email, amount, address: addr, status:'pending', ts:new Date().toISOString() });
-
-      document.getElementById('w_status').innerText = '✅ Withdraw request sent (pending).';
-
-      // notify admin via Telegram (client-side)
-      try{
-        const text = `📥 Withdraw Request\nUser: ${uSnap.val().username || uSnap.val().email}\nAmount: $${amount}\nAddress: ${addr}\nStatus: pending`;
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: CHAT_ID, text }) });
-      }catch(e){ console.warn('TG notify failed', e); }
-    });
-  </script>
+  // Notify admin via serverless
+  try{
+    const text = `📥 Withdraw Request\nUser: ${uSnap.val().username || uSnap.val().email}\nAmount: $${amount}\nAddress: ${addr}\nStatus: pending`;
+    await fetch(BOT_NOTIFY_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text }) });
+  }catch(e){ console.warn('Notify failed', e); }
+});
+</script>
 </body>
 </html>
