@@ -1,5 +1,6 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referral</title><link rel="stylesheet" href="css/style.css"></head>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referral</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
   <div class="app"><div class="container">
     <div class="header"><div class="logo">Referral</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
@@ -12,12 +13,11 @@
   </div></div>
 
   <script type="module">
-    import { getDoc, doc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-    import { db } from './js/firebase-init.js';
+    import { db, ref, get } from './js/firebase.js';
     async function init(){
       const uid = localStorage.getItem('uid'); if(!uid){ location.href='login.html'; return; }
-      const udoc = await getDoc(doc(db,'users',uid));
-      const code = udoc.data().referralCode || uid.slice(0,6);
+      const uSnap = await get(ref(db,`users/${uid}`));
+      const code = uSnap.val().referralCode || uid.slice(0,6).toUpperCase();
       const link = `${location.origin}/register.html?ref=${code}`;
       document.getElementById('refLink').value = link;
       document.getElementById('copyRef').addEventListener('click', ()=>{ navigator.clipboard.writeText(link); alert('Copied'); });
