@@ -1,9 +1,7 @@
 // js/firebase.js
-// Exports: dbRef helpers for Realtime Database
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, set, get, update, onValue, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// Replace databaseURL with your project's Realtime DB URL (provided below)
 const firebaseConfig = {
   apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
   authDomain: "adsclickpay-b4870.firebaseapp.com",
@@ -17,5 +15,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-export { db, ref, push, set, get, update, onValue, child };
+export { db, ref, push, set, get, update, onValue };
