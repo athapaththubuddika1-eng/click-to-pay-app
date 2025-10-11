@@ -1,60 +1,53 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-  <script src="js/auth.js" defer></script>
-</head>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand"><div class="logo">📊</div><h1>Dashboard</h1></div>
-      <div class="nav">
-        <a href="earn.html">Earn</a>
-        <a href="tasks.html">Tasks</a>
-        <a href="referral.html">Referral</a>
-        <a href="withdraw.html">Withdraw</a>
-        <a href="profile.html">Profile</a>
+  <div class="app">
+    <div class="container">
+      <div class="header">
+        <div class="logo">Dashboard</div>
+        <div><button id="logoutBtn" class="button btn-ghost">Logout</button></div>
+      </div>
+
+      <div class="card">
+        <h3 class="huge">Welcome, <span id="username">—</span></h3>
+        <p class="small">Balance: <strong id="userBalance">$0.000000</strong></p>
+        <div style="margin-top:12px">
+          <a href="earn.html" class="button btn-primary">Earn</a>
+          <a href="withdraw.html" class="button btn-ghost">Withdraw</a>
+          <a href="referral.html" class="button btn-green">Referral</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 class="huge">My Stats</h4>
+        <p class="small">Referrals: <span id="myReferrals">0</span></p>
+        <p class="small">Total Withdraws: <span id="myWithdraws">0</span></p>
       </div>
     </div>
-
-    <main>
-      <section class="card small" id="welcomeCard">
-        <h2 id="welcomeUser">Welcome</h2>
-        <div class="grid">
-          <div><strong>Balance</strong><div id="bal">$0.0000</div></div>
-          <div><strong>Referrals</strong><div id="refCount">0</div></div>
-        </div>
-        <div style="margin-top:12px"><a class="btn btn-primary" href="earn.html">Start Earning 💸</a></div>
-      </section>
-
-      <section class="card" id="recent">
-        <h3>Recent Withdrawals</h3>
-        <ul id="recentList" class="list"></ul>
-      </section>
-    </main>
   </div>
 
-  <script>
-    (function(){
-      const cur = JSON.parse(localStorage.getItem('acp_user')||'null');
-      if(!cur) return location.href='login.html';
-      const db = JSON.parse(localStorage.getItem('acp_db_v1')||'{}');
-      const u = (db.users||[]).find(x=>x.email===cur.email);
-      if(!u) return location.href='login.html';
-      document.getElementById('welcomeUser').innerText = 'Welcome, ' + (u.username||cur.email);
-      document.getElementById('bal').innerText = (function(v){ return '$' + Number(v||0).toFixed(4) })(u.balance);
-      document.getElementById('refCount').innerText = (u.referrals||[]).length;
-      const list = document.getElementById('recentList'); list.innerHTML='';
-      (db.withdraws||[]).slice().reverse().forEach(w=>{
-        if(w.email===cur.email){
-          const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — $${Number(w.amount).toFixed(4)} — ${w.status}`; list.appendChild(li);
-        }
-      });
-    })();
+  <script type="module">
+    import { auth, db, getDoc, doc, onAuthStateChanged } from './js/firebase-init.js';
+    import { signOut } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+    import { getDoc as getDoc2 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
+    async function loadProfile(){
+      const uid = localStorage.getItem('uid');
+      if(!uid){ location.href='login.html'; return; }
+      const udoc = await getDoc(doc(db,'users',uid));
+      if(!udoc.exists()) { alert('User not found'); return; }
+      const data = udoc.data();
+      document.getElementById('username').innerText = data.username || data.email;
+      document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
+      document.getElementById('myReferrals').innerText = data.referrals || 0;
+      // count user's withdraws
+      const wl = await (await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).getDocs((await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).collection(db,'withdraws'));
+      const myW = wl.docs.filter(d=>d.data().uid === uid);
+      document.getElementById('myWithdraws').innerText = myW.length;
+    }
+    document.getElementById('logoutBtn').addEventListener('click', async ()=>{ localStorage.removeItem('uid'); await signOut(auth); location.href='index.html'; });
+    loadProfile();
   </script>
 </body>
 </html>
