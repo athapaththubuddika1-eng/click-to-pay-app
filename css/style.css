@@ -18,15 +18,9 @@ html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg1),var(
 .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#e6f7ff}
 .center{text-align:center}
 .footer{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
-
-/* loading overlay */
 .splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));z-index:9999;flex-direction:column}
 .spinner{width:54px;height:54px;border-radius:50%;border:6px solid rgba(255,255,255,0.05);border-top-color:var(--accent3);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* misc */
 .list-item{padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px}
 .small-muted{color:rgba(255,255,255,0.5);font-size:13px}
-
-/* responsive */
 @media (max-width:480px){ .container{padding:12px} .button{padding:12px} }
