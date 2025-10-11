@@ -1,17 +1,10 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Register — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
   <div class="app">
     <div class="container">
-      <div class="header">
-        <div class="logo">Register</div>
-        <div><a href="login.html" class="button btn-ghost">Login</a></div>
-      </div>
+      <div class="header"><div class="logo">Register</div><div><a href="login.html" class="button btn-ghost">Login</a></div></div>
 
       <form id="registerForm" class="card">
         <input id="r_username" class="input" placeholder="Username" required />
@@ -26,8 +19,7 @@
   </div>
 
   <script type="module">
-    import { auth, db, setDoc, doc } from './js/firebase-init.js';
-    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+    import { db, push, set, ref, get } from './js/firebase.js';
 
     const form = document.getElementById('registerForm');
     form.addEventListener('submit', async (e)=>{
@@ -35,35 +27,43 @@
       const username = document.getElementById('r_username').value.trim();
       const email = document.getElementById('r_email').value.trim().toLowerCase();
       const password = document.getElementById('r_password').value.trim();
-      const ref = document.getElementById('r_referral').value.trim();
+      const refCode = document.getElementById('r_referral').value.trim();
 
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = cred.user.uid;
-        await setDoc(doc(db,'users', uid), {
-          username, email, balance:0, balanceMicro:0, referralCode: uid.slice(0,6), refBy: ref||null, referrals:0, banned:false, createdAt: new Date()
-        });
-        // handle referral bonus: if ref provided, add to both
-        if(ref){
-          // find user by referralCode
-          const q = await (await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).query;
-          // simple approach: scan users collection (small app)
-          const { getDocs, collection, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js');
-          const usersSnap = await getDocs(collection(db,'users'));
-          let ownerDoc = null;
-          usersSnap.forEach(snap => { const d = snap.data(); if(d.referralCode === ref) ownerDoc = snap; });
-          if(ownerDoc){
-            const ownerRef = doc(db,'users', ownerDoc.id);
-            await updateDoc(ownerRef, { balance: (ownerDoc.data().balance || 0) + 0.005, referrals: (ownerDoc.data().referrals||0)+1 });
-            // give new user bonus too
-            const newUserRef = doc(db,'users', uid);
-            await updateDoc(newUserRef, { balance: 0.005 });
+      // create user under /users (push)
+      const usersRef = ref(db,'users');
+      const newUserRef = push(usersRef);
+      const userKey = newUserRef.key;
+      const myReferral = userKey.slice(0,6).toUpperCase();
+
+      await set(newUserRef, {
+        username, email, password, balance: 0, referrals: 0, referralCode: myReferral, refBy: refCode||null, tonAddress: '', createdAt: new Date().toISOString()
+      });
+
+      // handle referral bonus if provided
+      if(refCode){
+        // scan users to find match
+        const usersSnap = await get(usersRef);
+        if(usersSnap.exists()){
+          const users = usersSnap.val();
+          for(const k in users){
+            if(users[k].referralCode === refCode){
+              // add bonus to owner
+              const ownerRef = ref(db,`users/${k}`);
+              await set(ownerRef, { ...users[k], balance: (Number(users[k].balance||0) + 0.005), referrals: (Number(users[k].referrals||0)+1) });
+              // add small bonus to new user as well
+              const thisUserRef = ref(db,`users/${userKey}`);
+              const userSnap = await get(thisUserRef);
+              await set(thisUserRef, { ...userSnap.val(), balance: 0.005 });
+              break;
+            }
           }
         }
+      }
 
-        alert('Registered!');
-        window.location.href = 'dashboard.html';
-      }catch(err){ alert('Error: ' + err.message); }
+      // save logged key in localStorage
+      localStorage.setItem('uid', userKey);
+      alert('Registered! Redirecting to dashboard...');
+      window.location.href = 'dashboard.html';
     });
   </script>
 </body>
