@@ -6,17 +6,18 @@
 <title>Admin Panel | AdsClickPay</title>
 <style>
   body {
-    background: linear-gradient(145deg, #0b0c10, #1f2833);
-    color: white;
+    background: radial-gradient(circle at top, #0b0c10 20%, #1f2833 80%);
+    color: #fff;
     font-family: "Poppins", sans-serif;
-    text-align: center;
     margin: 0;
     padding: 0;
+    text-align: center;
   }
 
   h2 {
     color: #66fcf1;
-    margin-top: 20px;
+    margin: 20px 0;
+    font-size: 24px;
   }
 
   .card {
@@ -24,7 +25,7 @@
     border-radius: 15px;
     box-shadow: 0 0 10px #45a29e;
     padding: 15px;
-    margin: 10px auto;
+    margin: 15px auto;
     max-width: 400px;
   }
 
@@ -35,18 +36,25 @@
     border-radius: 8px;
     border: none;
     outline: none;
+    font-size: 15px;
+  }
+
+  input {
+    background: #1f2833;
+    color: white;
   }
 
   button {
     background: #45a29e;
     color: white;
+    font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
   }
 
   button:hover {
     background: #66fcf1;
-    color: black;
+    color: #000;
   }
 
   .logout-btn {
@@ -59,17 +67,34 @@
   .section-title {
     color: #45a29e;
     font-size: 18px;
-    margin-top: 25px;
+    margin-top: 20px;
     border-bottom: 1px solid #45a29e;
   }
+
+  .task-item, .withdraw-item {
+    background: rgba(255,255,255,0.05);
+    margin: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: left;
+  }
+
+  .task-item button, .withdraw-item button {
+    width: auto;
+    margin: 3px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
 </style>
 </head>
 <body>
 
 <h2>🛠️ Admin Panel</h2>
-
 <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
 
+<!-- 🔐 Login -->
 <div id="loginBox" class="card">
   <h3>🔐 Admin Login</h3>
   <input type="email" id="adminEmail" placeholder="Admin Email" />
@@ -77,15 +102,18 @@
   <button id="loginAdmin">Login</button>
 </div>
 
+<!-- 📋 Panel -->
 <div id="panel" style="display:none;">
 
+  <!-- 💰 Add Balance -->
   <div class="card">
-    <h3 class="section-title">💰 Add Balance to User</h3>
+    <h3 class="section-title">💰 Add Balance</h3>
     <input type="email" id="userEmail" placeholder="User Email" />
     <input type="number" id="addAmount" placeholder="Amount ($)" />
-    <button id="addBalanceBtn">Add Balance</button>
+    <button id="addBalanceBtn">Add</button>
   </div>
 
+  <!-- 🚫 Ban / Unban -->
   <div class="card">
     <h3 class="section-title">🚫 Ban / Unban User</h3>
     <input type="email" id="banEmail" placeholder="User Email" />
@@ -93,15 +121,26 @@
     <button id="unbanBtn">Unban</button>
   </div>
 
+  <!-- 🧩 Add / Remove Tasks -->
   <div class="card">
-    <h3 class="section-title">📜 Withdraw Requests</h3>
+    <h3 class="section-title">🧩 Manage Tasks</h3>
+    <input type="text" id="taskTitle" placeholder="Task Title" />
+    <input type="url" id="taskLink" placeholder="Task Link" />
+    <input type="number" id="taskAmount" placeholder="Amount ($)" />
+    <button id="addTaskBtn">Add Task</button>
+    <div id="taskList"></div>
+  </div>
+
+  <!-- 💸 Withdraw Requests -->
+  <div class="card">
+    <h3 class="section-title">💸 Withdraw Requests</h3>
     <div id="withdrawList">Loading...</div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getDatabase, ref, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
@@ -122,8 +161,8 @@ const ADMIN_PASS = "Aabbcc.123";
 const loginBox = document.getElementById("loginBox");
 const panel = document.getElementById("panel");
 const logoutBtn = document.getElementById("logoutBtn");
-
 const loginAdmin = document.getElementById("loginAdmin");
+
 loginAdmin.addEventListener("click", () => {
   const email = document.getElementById("adminEmail").value;
   const pass = document.getElementById("adminPass").value;
@@ -131,15 +170,17 @@ loginAdmin.addEventListener("click", () => {
     localStorage.setItem("isAdmin", "true");
     loginBox.style.display = "none";
     panel.style.display = "block";
+    loadTasks();
     loadWithdraws();
   } else {
-    alert("❌ Invalid admin credentials!");
+    alert("❌ Invalid credentials!");
   }
 });
 
 if (localStorage.getItem("isAdmin") === "true") {
   loginBox.style.display = "none";
   panel.style.display = "block";
+  loadTasks();
   loadWithdraws();
 }
 
@@ -148,59 +189,88 @@ logoutBtn.onclick = () => {
   window.location.reload();
 };
 
-// ✅ Add Balance
+// 💰 Add Balance
 document.getElementById("addBalanceBtn").addEventListener("click", async () => {
   const email = document.getElementById("userEmail").value.trim();
   const amount = parseFloat(document.getElementById("addAmount").value);
-  if (!email || !amount) return alert("⚠️ Please fill fields");
-
+  if (!email || !amount) return alert("⚠️ Fill both fields!");
   const safeEmail = email.replaceAll(".", "_");
   const userRef = ref(db, "users/" + safeEmail);
-  const snap = await get(userRef);
-  if (!snap.exists()) return alert("User not found!");
-  const user = snap.val();
-  const newBal = (user.balance || 0) + amount;
-  await update(userRef, { balance: newBal });
-  alert("✅ Added $" + amount + " to " + email);
+  update(userRef, { balance: amount }).then(() => alert("✅ Added balance to " + email));
 });
 
-// 🚫 Ban / Unban User
-document.getElementById("banBtn").addEventListener("click", async () => {
-  const email = document.getElementById("banEmail").value.trim();
-  if (!email) return;
-  await update(ref(db, "users/" + email.replaceAll(".", "_")), { banned: true });
-  alert("🚫 User banned");
-});
+// 🚫 Ban / Unban
+document.getElementById("banBtn").onclick = () => {
+  const e = document.getElementById("banEmail").value.trim();
+  if (!e) return;
+  update(ref(db, "users/" + e.replaceAll(".", "_")), { banned: true });
+  alert("🚫 User Banned");
+};
+document.getElementById("unbanBtn").onclick = () => {
+  const e = document.getElementById("banEmail").value.trim();
+  if (!e) return;
+  update(ref(db, "users/" + e.replaceAll(".", "_")), { banned: false });
+  alert("✅ User Unbanned");
+};
 
-document.getElementById("unbanBtn").addEventListener("click", async () => {
-  const email = document.getElementById("banEmail").value.trim();
-  if (!email) return;
-  await update(ref(db, "users/" + email.replaceAll(".", "_")), { banned: false });
-  alert("✅ User unbanned");
-});
+// 🧩 Add Task
+document.getElementById("addTaskBtn").onclick = () => {
+  const title = document.getElementById("taskTitle").value.trim();
+  const link = document.getElementById("taskLink").value.trim();
+  const amount = parseFloat(document.getElementById("taskAmount").value);
+  if (!title || !link || !amount) return alert("⚠️ Fill all fields!");
+  const newTaskRef = push(ref(db, "tasks"));
+  set(newTaskRef, { title, link, amount });
+  alert("✅ Task Added!");
+  document.getElementById("taskTitle").value = "";
+  document.getElementById("taskLink").value = "";
+  document.getElementById("taskAmount").value = "";
+};
 
-// 💵 Withdraw Requests
+// 🧩 Load & Remove Tasks
+function loadTasks() {
+  const refT = ref(db, "tasks");
+  onValue(refT, (snap) => {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+    if (!snap.exists()) return list.innerHTML = "<p>No tasks yet.</p>";
+    Object.entries(snap.val()).forEach(([id, task]) => {
+      const div = document.createElement("div");
+      div.classList.add("task-item");
+      div.innerHTML = `
+        <p>🧩 <b>${task.title}</b></p>
+        <p>🔗 ${task.link}</p>
+        <p>💰 $${task.amount}</p>
+        <button onclick="removeTask('${id}')">❌ Remove</button>
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+window.removeTask = (id) => {
+  remove(ref(db, "tasks/" + id));
+  alert("🗑️ Task Removed");
+};
+
+// 💸 Withdraw Requests
 function loadWithdraws() {
-  const refW = ref(db, "withdraws/");
-  onValue(refW, (snapshot) => {
+  const refW = ref(db, "withdraws");
+  onValue(refW, (snap) => {
     const list = document.getElementById("withdrawList");
     list.innerHTML = "";
-    if (!snapshot.exists()) {
-      list.innerHTML = "<p>No requests yet.</p>";
-      return;
-    }
-    Object.entries(snapshot.val()).forEach(([email, requests]) => {
-      Object.entries(requests).forEach(([key, w]) => {
+    if (!snap.exists()) return list.innerHTML = "<p>No withdraws.</p>";
+    Object.entries(snap.val()).forEach(([email, reqs]) => {
+      Object.entries(reqs).forEach(([id, w]) => {
         const div = document.createElement("div");
-        div.classList.add("card");
+        div.classList.add("withdraw-item");
         div.innerHTML = `
           <p>👤 ${email.replaceAll("_", ".")}</p>
           <p>💰 $${w.amount}</p>
-          <p>🪙 ${w.wallet}</p>
-          <p>🕒 ${w.date}</p>
+          <p>📅 ${w.date}</p>
           <p>Status: ${w.status}</p>
-          <button onclick="approve('${email}','${key}')">✅ Approve</button>
-          <button onclick="reject('${email}','${key}')">❌ Reject</button>
+          <button onclick="approve('${email}','${id}')">✅ Approve</button>
+          <button onclick="reject('${email}','${id}')">❌ Reject</button>
         `;
         list.appendChild(div);
       });
@@ -208,13 +278,13 @@ function loadWithdraws() {
   });
 }
 
-window.approve = async (email, key) => {
-  await update(ref(db, `withdraws/${email}/${key}`), { status: "Approved" });
+window.approve = (email, id) => {
+  update(ref(db, `withdraws/${email}/${id}`), { status: "Approved" });
   alert("✅ Approved!");
 };
 
-window.reject = async (email, key) => {
-  await update(ref(db, `withdraws/${email}/${key}`), { status: "Rejected" });
+window.reject = (email, id) => {
+  update(ref(db, `withdraws/${email}/${id}`), { status: "Rejected" });
   alert("❌ Rejected!");
 };
 </script>
