@@ -1,28 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎥 Earn Ads - AdsClickPay</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Earn — Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* small page-specific tweaks */
+    .earn-wrap{max-width:420px;margin:28px auto;padding:20px;border-radius:12px;background:linear-gradient(180deg,#0f172a,#071026);box-shadow:0 10px 40px rgba(2,6,23,0.6);color:#e6f0fb}
+    .captcha-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:12px}
+    #captchaValue{background:#142231;padding:10px 14px;border-radius:10px;font-weight:800;letter-spacing:3px}
+    .hint{color:#9fb6c9;margin-top:10px;font-size:14px}
+    .btn-wide{width:100%;padding:12px;border-radius:12px;border:0;font-weight:800;cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,#3aa6ff,#00d7a0);color:#042027}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#d7edf5}
+  </style>
 </head>
-<body class="dark">
+<body>
+  <div class="earn-wrap">
+    <h2 style="margin:0 0 6px">🎯 Earn — Watch Ads</h2>
+    <p style="margin:0 0 14px;color:#9fb6c9">Captcha → ad open (5s) → rewards (captcha + ad)</p>
 
-  <div class="earn-container">
-    <h2>💰 Watch Ads & Earn</h2>
-
-    <form id="earnForm" class="earn-box">
-      <p>🧩 Complete the CAPTCHA to start earning</p>
-      <div class="captcha-box">
-        <span id="captchaValue"></span>
-        <button type="button" id="reloadCaptcha">🔄</button>
+    <form id="earnForm">
+      <div class="captcha-row">
+        <div id="captchaValue">ABCDE</div>
+        <button type="button" id="reloadCaptcha" class="btn-ghost" style="padding:8px 10px;border-radius:10px">🔄</button>
       </div>
-      <input id="captchaInput" type="text" placeholder="Type CAPTCHA here..." required />
-
-      <button type="submit" id="watchBtn">🎥 Watch Ad</button>
+      <input id="captchaInput" class="input" placeholder="Type captcha" autocomplete="off" required />
+      <button id="submitCaptcha" class="btn-wide btn-primary" type="submit" style="margin-top:12px">▶ Submit & Open Ad</button>
     </form>
 
-    <p class="hint">💵 Captcha: $0.0002 | Ad Watch: $0.00015</p>
+    <div style="margin-top:14px">
+      <button id="watchOnly" class="btn-wide btn-ghost">▶ Watch Ad (No Captcha)</button>
+    </div>
+
+    <p class="hint">Rewards — Captcha: <strong>$0.00020</strong> + Ad: <strong>$0.00015</strong></p>
+
+    <div id="status" style="margin-top:12px;color:#bfe7d7;font-weight:700"></div>
   </div>
 
   <script src="js/earn.js"></script>
