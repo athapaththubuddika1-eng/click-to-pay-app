@@ -1,70 +1,50 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register</title><link rel="stylesheet" href="css/style.css"></head>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ads Click Pay</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
 <body>
-  <div class="app">
-    <div class="container">
-      <div class="header"><div class="logo">Register</div><div><a href="login.html" class="button btn-ghost">Login</a></div></div>
+<div id="splash" class="splash" style="display:flex"><div class="spinner"></div><div style="margin-top:12px;color:#fff">Loading...</div></div>
 
-      <form id="registerForm" class="card">
-        <input id="r_username" class="input" placeholder="Username" required />
-        <input id="r_email" class="input" placeholder="Email" type="email" required />
-        <input id="r_password" class="input" placeholder="Password" type="password" required />
-        <input id="r_referral" class="input" placeholder="Referral code (optional)" />
-        <button type="submit" class="button btn-primary">Create Account</button>
-      </form>
-
-      <div class="footer small">By registering you accept our terms.</div>
+<div class="app">
+  <div class="container">
+    <div class="header">
+      <div class="logo">Ads Click Pay</div>
+      <div><a href="login.html" class="button btn-ghost">Login</a></div>
     </div>
+
+    <div class="card center">
+      <h1 class="huge">💸 Ads Click Pay</h1>
+      <p class="small">Earn by watching ads and completing tasks. Referral bonuses & TON withdrawals supported.</p>
+      <div style="margin-top:12px">
+        <a href="register.html" class="button btn-primary">Get Started</a>
+        <a href="earn.html" class="button btn-ghost">Earn Now</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="huge">Platform Summary</h3>
+      <p class="small">Total Members: <span id="totalMembers">0</span></p>
+      <p class="small">Total Withdrawals: <span id="totalWithdrawals">0</span></p>
+    </div>
+
+    <div class="footer">© 2025 Ads Click Pay</div>
   </div>
+</div>
 
-  <script type="module">
-    import { db, push, set, ref, get } from './js/firebase.js';
-
-    const form = document.getElementById('registerForm');
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const username = document.getElementById('r_username').value.trim();
-      const email = document.getElementById('r_email').value.trim().toLowerCase();
-      const password = document.getElementById('r_password').value.trim();
-      const refCode = document.getElementById('r_referral').value.trim();
-
-      // create user under /users (push)
-      const usersRef = ref(db,'users');
-      const newUserRef = push(usersRef);
-      const userKey = newUserRef.key;
-      const myReferral = userKey.slice(0,6).toUpperCase();
-
-      await set(newUserRef, {
-        username, email, password, balance: 0, referrals: 0, referralCode: myReferral, refBy: refCode||null, tonAddress: '', createdAt: new Date().toISOString()
-      });
-
-      // handle referral bonus if provided
-      if(refCode){
-        // scan users to find match
-        const usersSnap = await get(usersRef);
-        if(usersSnap.exists()){
-          const users = usersSnap.val();
-          for(const k in users){
-            if(users[k].referralCode === refCode){
-              // add bonus to owner
-              const ownerRef = ref(db,`users/${k}`);
-              await set(ownerRef, { ...users[k], balance: (Number(users[k].balance||0) + 0.005), referrals: (Number(users[k].referrals||0)+1) });
-              // add small bonus to new user as well
-              const thisUserRef = ref(db,`users/${userKey}`);
-              const userSnap = await get(thisUserRef);
-              await set(thisUserRef, { ...userSnap.val(), balance: 0.005 });
-              break;
-            }
-          }
-        }
-      }
-
-      // save logged key in localStorage
-      localStorage.setItem('uid', userKey);
-      alert('Registered! Redirecting to dashboard...');
-      window.location.href = 'dashboard.html';
-    });
-  </script>
+<script type="module">
+import { db, ref, get } from './js/firebase.js';
+async function loadSummary(){
+  try{
+    const usersSnap = await get(ref(db,'users')); const withdrawsSnap = await get(ref(db,'withdraws'));
+    document.getElementById('totalMembers').innerText = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
+    document.getElementById('totalWithdrawals').innerText = withdrawsSnap.exists() ? Object.keys(withdrawsSnap.val()).length : 0;
+  }catch(e){ console.warn(e); }
+  setTimeout(()=>document.getElementById('splash').style.display='none',800);
+}
+loadSummary();
+</script>
 </body>
 </html>
