@@ -1,31 +1,46 @@
+// earn.js - iframe ad inline, 5s countdown, credit reward
 document.addEventListener('DOMContentLoaded', ()=>{
-  const watchBtn = document.getElementById('watchAdBtn');
-  const adTimer = document.getElementById('adTimer');
-  const captchaSubmit = document.getElementById('captchaSubmit');
-  if(watchBtn){
-    watchBtn.addEventListener('click', ()=>{
-      const user = APP.currentUser();
-      if(!user) return alert('Login required');
-      const adUrl = localStorage.getItem('acp_ads_link') || (window.ADS_LINK || '');
-      const w = window.open(adUrl, '_blank');
-      if(!w) return alert('Popup blocked');
-      let t=5; adTimer.textContent = 'Wait ' + t + 's...';
-      const iv = setInterval(()=>{ t--; adTimer.textContent = 'Wait ' + t + 's...'; if(t<=0){ clearInterval(iv); adTimer.textContent='Done'; w.close();
-        const db = APP.DBDATA; const u = db.users[user.email]; u.balance = Number(u.balance) + Number(db.settings.watchReward); APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(db.settings.watchReward)); window.location.reload();
-      } },1000);
-    });
+  const watchBtn = document.getElementById('watchBtn');
+  const captchaForm = document.getElementById('captchaForm');
+  const adModal = document.getElementById('adModal');
+  const adFrame = document.getElementById('adFrame');
+  const adCountdown = document.getElementById('adCountdown');
+  const claimBtn = document.getElementById('claimReward');
+  const closeBtn = document.getElementById('closeAd');
+  const ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';
+
+  function openAd(isCaptcha=false){
+    const cur = currentUser(); if(!cur) return alert('Login first');
+    const db = APP.loadDB();
+    adFrame.innerHTML = `<iframe src="${ADS_LINK}" style="width:100%;height:220px;border:0;border-radius:8px"></iframe>`;
+    adModal.classList.add('show');
+    let t = 5; adCountdown.innerText = t; claimBtn.disabled = true;
+    const iv = setInterval(()=>{
+      t--; adCountdown.innerText = t;
+      if(t<=0){ clearInterval(iv); claimBtn.disabled = false; claimBtn.dataset.ready = isCaptcha ? 'captcha' : 'watch'; }
+    },1000);
   }
-  if(captchaSubmit){
-    captchaSubmit.addEventListener('click', ()=>{
-      const checked = document.getElementById('captchaBox').checked;
-      if(!checked) return alert('Please check captcha');
-      const user = APP.currentUser(); if(!user) return alert('Login required');
-      const adUrl = localStorage.getItem('acp_ads_link') || (window.ADS_LINK || '');
-      const w = window.open(adUrl, '_blank'); if(!w) return alert('Popup blocked');
-      let t=5; const adTimer2 = document.getElementById('adTimer2'); adTimer2.textContent='Wait ' + t + 's...';
-      const iv = setInterval(()=>{ t--; adTimer2.textContent='Wait ' + t + 's...'; if(t<=0){ clearInterval(iv); adTimer2.textContent='Done'; w.close();
-        const db = APP.DBDATA; const u = db.users[user.email]; u.balance = Number(u.balance) + Number(db.settings.captchaReward); APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(db.settings.captchaReward)); window.location.reload();
-      } },1000);
-    });
-  }
+
+  watchBtn && watchBtn.addEventListener('click', ()=> openAd(false));
+  captchaForm && captchaForm.addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = document.getElementById('captchaInput').value.trim().toLowerCase();
+    if(val !== 'human') return alert('Captcha wrong');
+    openAd(true);
+  });
+
+  claimBtn && claimBtn.addEventListener('click', ()=>{
+    const cur = currentUser(); if(!cur) return alert('Login');
+    const db = APP.loadDB(); const u = db.users.find(x=>x.email===cur.email);
+    const isCaptcha = claimBtn.dataset.ready === 'captcha';
+    const reward = isCaptcha ? db.settings.captchaReward : db.settings.watchReward;
+    u.balance = Number(u.balance||0) + Number(reward);
+    APP.saveDB(db);
+    setCurrentUser({ email:u.email, username:u.username });
+    alert('Reward added ' + money(reward));
+    adModal.classList.remove('show');
+    location.href='dashboard.html';
+  });
+
+  closeBtn && closeBtn.addEventListener('click', ()=> adModal.classList.remove('show'));
 });
