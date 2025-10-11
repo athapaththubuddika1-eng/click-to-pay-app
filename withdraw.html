@@ -1,30 +1,55 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Withdraw - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Withdraw</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="topbar container"><div class="brand"><div class="logo">🏧</div><div class="title">Withdraw</div></div></div>
+  <div class="container">
+    <div class="topbar"><div class="brand"><div class="logo">🏧</div><h1>Withdraw</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <main>
+      <section class="card small">
+        <h3>Request Withdraw</h3>
+        <form id="withdrawForm">
+          <input class="input" name="address" placeholder="TON Address" required />
+          <input class="input" name="amount" type="number" step="0.01" placeholder="Amount" required />
+          <button class="btn btn-primary">Submit Withdraw</button>
+        </form>
+      </section>
+      <section class="card">
+        <h3>Your Withdraw History</h3>
+        <ul id="myWithdraws" class="list"></ul>
+      </section>
+    </main>
+  </div>
 
-  <main class="container small card">
-    <h3>Request Withdraw</h3>
-    <form id="withdrawForm">
-      <input class="input" name="address" placeholder="TON Address" required />
-      <input class="input" name="amount" type="number" step="0.01" placeholder="Amount" required />
-      <button class="btn btn-primary" type="submit">Submit Withdraw</button>
-    </form>
-    <div style="margin-top:12px"><a href="withdraw_history.html">View Withdraw History</a></div>
-  </main>
-
-  <script src="js/main.js"></script>
   <script>
-    document.getElementById('withdrawForm').addEventListener('submit',(e)=>{
-      e.preventDefault();
-      const fd = new FormData(e.target); const data = Object.fromEntries(fd.entries()); const cur = currentUser(); if(!cur) return alert('Login required');
-      try{ APP.submitWithdraw({ email: cur.email, amount: data.amount, address: data.address }); alert('Withdraw requested'); window.location.href='withdraw_history.html'; }catch(err){ alert(err.message); }
-    });
+    (function(){
+      const cur = currentUser(); if(!cur) return location.href='login.html';
+      const db = APP.loadDB();
+      const form = document.getElementById('withdrawForm');
+      const list = document.getElementById('myWithdraws');
+      function refreshList(){ list.innerHTML=''; db.withdraws.filter(w=>w.email===cur.email).forEach(w=>{ const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — ${money(w.amount)} — ${w.status}`; list.appendChild(li); }); }
+      refreshList();
+      form.addEventListener('submit', e=>{
+        e.preventDefault();
+        const fd = new FormData(form); const data = Object.fromEntries(fd.entries());
+        const amt = Number(data.amount);
+        if(amt < db.settings.minWithdraw) return alert('Minimum withdraw ' + money(db.settings.minWithdraw));
+        const u = db.users.find(x=>x.email===cur.email);
+        if(Number(u.balance) < amt) return alert('Insufficient balance');
+        // daily limit
+        const today = new Date().toISOString().slice(0,10);
+        const todayCount = db.withdraws.filter(w=>w.email===cur.email && w.createdAt.slice(0,10)===today).length;
+        if(todayCount >= db.settings.dailyWithdrawLimit) return alert('Daily withdraw limit reached');
+        // subtract immediately
+        u.balance = Number(u.balance) - amt;
+        const req = { id: uid(10), email:cur.email, amount:amt, address:data.address, status:'pending', createdAt:new Date().toISOString() };
+        db.withdraws.push(req); APP.saveDB(db);
+        setCurrentUser({ email:u.email, username:u.username });
+        alert('Withdraw requested');
+        refreshList();
+        // notify admin (serverless)
+        fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text:`📥 Withdraw Request\nUser: ${u.username}\nAmount: $${amt}\nAddress: ${data.address}\nStatus: pending` }) }).catch(()=>{});
+      });
+    })();
   </script>
 </body>
 </html>
