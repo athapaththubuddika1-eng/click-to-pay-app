@@ -1,11 +1,19 @@
-// referral.js
-document.addEventListener('DOMContentLoaded', ()=>{
-  const cur = currentUser(); if(!cur) return location.href='login.html';
-  const db = loadDB(); const u = db.users.find(x=>x.email===cur.email);
-  document.getElementById('refCode').textContent = u.referralCode || '—';
-  const botUsername = 'adsclickpaybot';
-  const link = `https://t.me/${botUsername}?start=${u.referralCode}`;
+// js/referral.js
+import { db, ref, get, onValue } from './firebase.js';
+import { requireAuth, safeEmail } from './main.js';
+
+export async function initReferral() {
+  const email = requireAuth();
+  const safe = safeEmail(email);
+  const uSnap = await get(ref(db, `users/${safe}`));
+  const code = uSnap.exists() ? uSnap.val().referralCode : safe.slice(0,6).toUpperCase();
+  const link = `${location.origin}/register.html?ref=${code}`;
   document.getElementById('refLink').value = link;
-  document.getElementById('refCount').textContent = `You have invited ${(u.referrals||[]).length} people.`;
-  document.getElementById('copyRef').addEventListener('click', ()=>{ navigator.clipboard.writeText(link).then(()=>alert('Copied referral link')) });
-});
+  document.getElementById('copyRef').addEventListener('click', ()=>{
+    navigator.clipboard.writeText(link);
+    alert('Referral link copied');
+  });
+  onValue(ref(db, `users/${safe}/referrals`), s => {
+    document.getElementById('copyRef').innerText = 'Copy Link';
+  });
+}
