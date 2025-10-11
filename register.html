@@ -1,33 +1,70 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Register — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-  <script src="js/auth.js" defer></script>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand"><div class="logo">📝</div><h1>Register</h1></div>
-      <div class="nav"><a href="index.html">Home</a><a href="login.html">Login</a></div>
-    </div>
+  <div class="app">
+    <div class="container">
+      <div class="header">
+        <div class="logo">Register</div>
+        <div><a href="login.html" class="button btn-ghost">Login</a></div>
+      </div>
 
-    <main>
-      <section class="card small">
-        <h2 class="huge">Create account</h2>
-        <form id="registerForm">
-          <input class="input" name="username" placeholder="Username" required />
-          <input class="input" name="email" type="email" placeholder="Email" required />
-          <input class="input" name="password" type="password" placeholder="Password" required />
-          <input class="input" name="referral" placeholder="Referral code (optional)" />
-          <button class="btn btn-primary" type="submit">Register ✨</button>
-        </form>
-        <p style="margin-top:12px">Already have an account? <a href="login.html">Login</a></p>
-      </section>
-    </main>
+      <form id="registerForm" class="card">
+        <input id="r_username" class="input" placeholder="Username" required />
+        <input id="r_email" class="input" placeholder="Email" type="email" required />
+        <input id="r_password" class="input" placeholder="Password" type="password" required />
+        <input id="r_referral" class="input" placeholder="Referral code (optional)" />
+        <button type="submit" class="button btn-primary">Create Account</button>
+      </form>
+
+      <div class="footer small">By registering you accept our terms.</div>
+    </div>
   </div>
+
+  <script type="module">
+    import { auth, db, setDoc, doc } from './js/firebase-init.js';
+    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = document.getElementById('r_username').value.trim();
+      const email = document.getElementById('r_email').value.trim().toLowerCase();
+      const password = document.getElementById('r_password').value.trim();
+      const ref = document.getElementById('r_referral').value.trim();
+
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+        await setDoc(doc(db,'users', uid), {
+          username, email, balance:0, balanceMicro:0, referralCode: uid.slice(0,6), refBy: ref||null, referrals:0, banned:false, createdAt: new Date()
+        });
+        // handle referral bonus: if ref provided, add to both
+        if(ref){
+          // find user by referralCode
+          const q = await (await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).query;
+          // simple approach: scan users collection (small app)
+          const { getDocs, collection, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js');
+          const usersSnap = await getDocs(collection(db,'users'));
+          let ownerDoc = null;
+          usersSnap.forEach(snap => { const d = snap.data(); if(d.referralCode === ref) ownerDoc = snap; });
+          if(ownerDoc){
+            const ownerRef = doc(db,'users', ownerDoc.id);
+            await updateDoc(ownerRef, { balance: (ownerDoc.data().balance || 0) + 0.005, referrals: (ownerDoc.data().referrals||0)+1 });
+            // give new user bonus too
+            const newUserRef = doc(db,'users', uid);
+            await updateDoc(newUserRef, { balance: 0.005 });
+          }
+        }
+
+        alert('Registered!');
+        window.location.href = 'dashboard.html';
+      }catch(err){ alert('Error: ' + err.message); }
+    });
+  </script>
 </body>
 </html>
