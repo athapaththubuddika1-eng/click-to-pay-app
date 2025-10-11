@@ -1,13 +1,15 @@
 {
   "users": [
     {
-      "username": "admin",
+      "username": "hasanbuddika",
       "email": "hasanbuddika1@gmail.com",
       "password": "Aabbcc.123",
       "balance": 0,
-      "referral": "ADMINREF",
-      "refCount": 0,
-      "banned": false
+      "referralCode": "ADMINREF",
+      "referrer": null,
+      "referrals": [],
+      "banned": false,
+      "address": ""
     }
   ],
   "tasks": [],
