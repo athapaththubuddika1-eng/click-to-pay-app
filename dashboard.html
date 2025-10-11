@@ -1,11 +1,24 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Dashboard</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script><script src="js/auth.js" defer></script></head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+  <script src="js/auth.js" defer></script>
+</head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="brand"><div class="logo">📊</div><h1>Dashboard</h1></div>
-      <div class="nav"><a href="earn.html">Earn</a><a href="tasks.html">Tasks</a><a href="referral.html">Referral</a><a href="withdraw.html">Withdraw</a></div>
+      <div class="nav">
+        <a href="earn.html">Earn</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="referral.html">Referral</a>
+        <a href="withdraw.html">Withdraw</a>
+        <a href="profile.html">Profile</a>
+      </div>
     </div>
 
     <main>
@@ -27,15 +40,18 @@
 
   <script>
     (function(){
-      const cur = currentUser(); if(!cur) return location.href='login.html';
-      const db = APP.loadDB(); const u = db.users.find(x=>x.email===cur.email);
+      const cur = JSON.parse(localStorage.getItem('acp_user')||'null');
+      if(!cur) return location.href='login.html';
+      const db = JSON.parse(localStorage.getItem('acp_db_v1')||'{}');
+      const u = (db.users||[]).find(x=>x.email===cur.email);
+      if(!u) return location.href='login.html';
       document.getElementById('welcomeUser').innerText = 'Welcome, ' + (u.username||cur.email);
-      document.getElementById('bal').innerText = money(u.balance);
+      document.getElementById('bal').innerText = (function(v){ return '$' + Number(v||0).toFixed(4) })(u.balance);
       document.getElementById('refCount').innerText = (u.referrals||[]).length;
       const list = document.getElementById('recentList'); list.innerHTML='';
-      db.withdraws.slice().reverse().forEach(w=>{
+      (db.withdraws||[]).slice().reverse().forEach(w=>{
         if(w.email===cur.email){
-          const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — ${money(w.amount)} — ${w.status}`; list.appendChild(li);
+          const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — $${Number(w.amount).toFixed(4)} — ${w.status}`; list.appendChild(li);
         }
       });
     })();
