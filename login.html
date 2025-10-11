@@ -2,42 +2,36 @@
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="app">
-    <div class="container">
-      <div class="header"><div class="logo">Login</div><div><a href="register.html" class="button btn-ghost">Register</a></div></div>
+<div class="app"><div class="container">
+  <div class="header"><div class="logo">Login</div><div><a href="register.html" class="button btn-ghost">Register</a></div></div>
 
-      <form id="loginForm" class="card">
-        <input id="l_email" class="input" placeholder="Email" type="email" required />
-        <input id="l_password" class="input" placeholder="Password" type="password" required />
-        <button class="button btn-primary" type="submit">Login</button>
-      </form>
+  <form id="loginForm" class="card">
+    <input id="l_email" class="input" placeholder="Email" type="email" required />
+    <input id="l_password" class="input" placeholder="Password" type="password" required />
+    <button class="button btn-primary" type="submit">Login</button>
+  </form>
+  <div class="footer small">Use your account to login.</div>
+</div></div>
 
-      <div class="footer small">Use your account to login.</div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { db, ref, get } from './js/firebase.js';
-
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const email = document.getElementById('l_email').value.trim().toLowerCase();
-      const password = document.getElementById('l_password').value.trim();
-
-      const usersSnap = await get(ref(db,'users'));
-      if(!usersSnap.exists()){ return alert('No users yet'); }
-      const users = usersSnap.val();
-      for(const k in users){
-        if(users[k].email === email && users[k].password === password){
-          localStorage.setItem('uid', k);
-          alert('Login successful');
-          window.location.href = 'dashboard.html';
-          return;
-        }
-      }
-      alert('Invalid email or password');
-    });
-  </script>
+<script type="module">
+import { db, ref, get } from './js/firebase.js';
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('l_email').value.trim().toLowerCase();
+  const password = document.getElementById('l_password').value.trim();
+  const usersSnap = await get(ref(db,'users'));
+  if(!usersSnap.exists()){ return alert('No users found'); }
+  const users = usersSnap.val();
+  for(const k in users){
+    if(users[k].email === email && users[k].password === password){
+      localStorage.setItem('uid', k);
+      alert('Login successful');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+  }
+  alert('Invalid email or password');
+});
+</script>
 </body>
 </html>
