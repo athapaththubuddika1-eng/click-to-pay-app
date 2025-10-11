@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Earn</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script><script src="js/earn.js" defer></script></head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Earn — Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+  <script src="js/earn.js" defer></script>
+</head>
 <body>
   <div class="container">
     <div class="topbar">
@@ -20,17 +27,20 @@
         <p class="lead">Type the word <strong>human</strong> then submit to open ad and earn more.</p>
         <form id="captchaForm">
           <input id="captchaInput" class="input" placeholder="Type 'human'"/>
-          <button class="btn btn-primary" id="captchaBtn">Submit + Open</button>
+          <button id="captchaBtn" class="btn btn-primary" type="submit">Submit + Open</button>
         </form>
       </section>
     </main>
 
-    <!-- modal -->
+    <!-- ad modal -->
     <div id="adModal" class="modal">
       <div class="modal-card">
         <div id="adFrame"></div>
-        <div style="margin-top:12px"><div id="adCountdown" style="font-size:20px">5</div></div>
-        <div style="margin-top:12px"><button id="claimReward" class="btn btn-primary" disabled>Claim Reward</button> <button id="closeAd" class="btn btn-ghost">Close</button></div>
+        <div class="countdown" id="adCountdown">5</div>
+        <div style="margin-top:12px">
+          <button id="claimReward" class="btn btn-primary" disabled>Claim Reward</button>
+          <button id="closeAd" class="btn btn-ghost">Close</button>
+        </div>
       </div>
     </div>
   </div>
