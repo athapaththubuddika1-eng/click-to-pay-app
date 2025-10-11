@@ -1,51 +1,49 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tasks - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Tasks</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script></head>
 <body>
-  <div class="topbar container">
-    <div class="brand">
-      <div class="logo">📝</div>
-      <div class="title">Tasks</div>
-    </div>
+  <div class="container">
+    <div class="topbar"><div class="brand"><div class="logo">📝</div><h1>Tasks</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <main>
+      <section class="card">
+        <h3>Available Tasks</h3>
+        <ul id="tasksList" class="list"></ul>
+      </section>
+    </main>
   </div>
 
-  <main class="container">
-    <div id="tasksList"></div>
-  </main>
-
-  <script src="js/main.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const wrap = document.getElementById('tasksList'); wrap.innerHTML='';
-      APP.DBDATA.tasks.forEach((t,i)=>{
-        const el = document.createElement('div'); el.className='card small';
-        el.innerHTML = `<h4>${t.title}</h4><p>Reward: ${t.amount}</p><div><button class="btn" onclick="joinTask('${t.id}')">Join</button> <button class="btn hidden" id="claim-${t.id}" onclick="claimTask('${t.id}')">Claim</button></div>`;
-        wrap.appendChild(el);
+    (function(){
+      const cur = currentUser(); if(!cur) return location.href='login.html';
+      const db = APP.loadDB();
+      const list = document.getElementById('tasksList'); list.innerHTML='';
+      db.tasks.forEach(t=>{
+        const li=document.createElement('li');
+        li.innerHTML = `<strong>${t.title}</strong> — Reward: ${money(t.amount)} <div style="margin-top:8px"><button class="btn" data-url="${t.url}" data-id="${t.id}">Join</button> <button class="btn hidden" data-claim="${t.id}">Claim</button></div>`;
+        list.appendChild(li);
       });
-    });
-
-    function joinTask(id){
-      const t = APP.DBDATA.tasks.find(x=>x.id===id); if(!t) return;
-      const w = window.open(t.url,'_blank'); if(!w) return alert('Popup blocked');
-      let s=5;
-      const btn = event.target;
-      btn.innerText = 'Wait ' + s + 's...';
-      const iv = setInterval(()=>{ s--; btn.innerText='Wait ' + s + 's...'; if(s<=0){ clearInterval(iv); btn.classList.add('hidden'); document.getElementById('claim-'+id).classList.remove('hidden'); } },1000);
-    }
-
-    function claimTask(id){
-      const user = currentUser(); if(!user) return alert('Login required');
-      const t = APP.DBDATA.tasks.find(x=>x.id===id); if(!t) return;
-      APP.DBDATA.users[user.email].balance = Number(APP.DBDATA.users[user.email].balance || 0) + Number(t.amount);
-      APP.DBDATA.users[user.email].tasksCompleted = (APP.DBDATA.users[user.email].tasksCompleted||0) + 1;
-      APP.DBDATA.tasks = APP.DBDATA.tasks.filter(x=>x.id!==id);
-      APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(t.amount));
-      window.location.reload();
-    }
+      document.querySelectorAll('[data-url]').forEach(b=>{
+        b.addEventListener('click', (e)=>{
+          const id = e.target.dataset.id; const url = e.target.dataset.url;
+          // open URL in same page area (iframe modal) or new tab - we'll open in new tab to avoid framing blocks
+          window.open(url,'_blank');
+          // flip to claim after 5s
+          e.target.innerText = 'Waiting 5s...'; let s=5;
+          const iv = setInterval(()=>{ s--; e.target.innerText = 'Wait ' + s + 's'; if(s<=0){ clearInterval(iv); e.target.style.display='none'; const claim = document.querySelector(`[data-claim="${id}"]`); claim.classList.remove('hidden'); claim.addEventListener('click', ()=>{ claimTask(id); }); } },1000);
+        });
+      });
+      function claimTask(id){
+        const db = APP.loadDB(); const cur = currentUser(); const u = db.users.find(x=>x.email===cur.email);
+        const task = db.tasks.find(t=>t.id===id); if(!task) return alert('Task gone');
+        u.balance = Number(u.balance||0) + Number(task.amount);
+        u.tasksCompleted = (u.tasksCompleted||0) + 1;
+        // remove task
+        db.tasks = db.tasks.filter(t=>t.id!==id);
+        APP.saveDB(db);
+        alert('Task reward added ' + money(task.amount));
+        location.href='dashboard.html';
+      }
+    })();
   </script>
 </body>
 </html>
