@@ -1,59 +1,48 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ads Click Pay — Home</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">💸</div>
-        <h1>Ads Click Pay</h1>
+  <div class="app">
+    <div class="container">
+      <div class="header">
+        <div class="logo">Ads Click Pay</div>
+        <div><a href="login.html" class="button btn-ghost">Login</a></div>
       </div>
-      <div class="nav">
-        <a href="index.html" class="active">Home</a>
-        <a href="earn.html">Earn</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="admin.html">Admin</a>
+
+      <div class="card center">
+        <h1 class="huge">💸 Earn by watching ads</h1>
+        <p class="small">Captcha + 5s ad watch → rewards. Referral bonuses & TON withdraws supported.</p>
+        <div style="margin-top:14px">
+          <a href="register.html" class="button btn-primary">Get Started</a>
+          <a href="earn.html" class="button btn-ghost">Earn Now</a>
+        </div>
       </div>
+
+      <div class="card">
+        <h3 class="huge">Platform Summary</h3>
+        <p class="small">Total Members: <span id="totalMembers">—</span></p>
+        <p class="small">Total Withdrawals: <span id="totalWithdrawals">—</span></p>
+      </div>
+
+      <div class="footer">© 2025 Ads Click Pay</div>
     </div>
-
-    <main>
-      <section class="card">
-        <h2 class="huge">Welcome 👋</h2>
-        <p class="lead">Earn by watching ads, completing tasks and inviting friends. Mobile-friendly — Telegram mini-app style.</p>
-        <div style="margin-top:12px">
-          <a class="btn btn-primary" href="register.html">Get Started ✅</a>
-          <a class="btn btn-outline" href="login.html">Login 🔐</a>
-        </div>
-      </section>
-
-      <section class="card grid">
-        <div>
-          <h4>Platform Summary</h4>
-          <p id="sumMembers">Members: 0</p>
-        </div>
-        <div>
-          <h4>Quick Info</h4>
-          <p>Min Withdraw: $0.10</p>
-          <p>Watch Reward: $0.0001</p>
-          <p>Captcha+Ad: $0.0002</p>
-          <p>Referral Bonus: $0.005</p>
-        </div>
-      </section>
-    </main>
-
-    <div class="footer">© 2025 Ads Click Pay</div>
   </div>
 
-  <script>
-    // populate summary
-    const db = (function(){ try{ return JSON.parse(localStorage.getItem('acp_db_v1')) || null }catch(e){return null}})() || (function(){ const init={users:[],tasks:[],withdraws:[],settings:{minWithdraw:0.1,watchReward:0.0001,captchaReward:0.0002,referralBonus:0.005,dailyWithdrawLimit:1}}; localStorage.setItem('acp_db_v1',JSON.stringify(init)); return init; })();
-    document.getElementById('sumMembers').innerText = 'Members: ' + (db.users.length||0);
+  <script type="module">
+    import { db, collection, getDocs } from './js/firebase-init.js';
+    async function loadSummary(){
+      try{
+        const usersSnap = await getDocs(collection(db, 'users'));
+        document.getElementById('totalMembers').innerText = usersSnap.size;
+        const wSnap = await getDocs(collection(db,'withdraws'));
+        document.getElementById('totalWithdrawals').innerText = wSnap.size;
+      }catch(e){ console.warn(e); }
+    }
+    loadSummary();
   </script>
 </body>
 </html>
