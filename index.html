@@ -1,17 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Ads Click Pay 💸</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Ads Click Pay</title><link rel="stylesheet" href="css/style.css"><script src="js/main.js" defer></script></head>
 <body>
   <div class="container">
-    <h2>Welcome to Ads Click Pay 💸</h2>
-    <div id="loading" class="loading"></div>
-    <p>Earn money by watching ads & completing simple tasks!</p>
-    <button onclick="window.location='login.html'">🔐 Login</button>
-    <button onclick="window.location='register.html'">📝 Register</button>
+    <div class="topbar">
+      <div class="brand"><div class="logo">💸</div><h1>Ads Click Pay</h1></div>
+      <div class="nav"><a href="index.html" class="active">Home</a><a href="earn.html">Earn</a><a href="dashboard.html">Dashboard</a><a href="admin.html">Admin</a></div>
+    </div>
+
+    <main>
+      <section class="card">
+        <h2 class="huge">Welcome 👋</h2>
+        <p class="lead">Earn by watching ads, completing tasks and inviting friends. Mobile-friendly — Telegram mini-app style.</p>
+        <div style="margin-top:12px">
+          <a class="btn btn-primary" href="register.html">Get Started ✅</a>
+          <a class="btn btn-outline" href="login.html">Login 🔐</a>
+        </div>
+      </section>
+
+      <section class="card grid">
+        <div>
+          <h4>Platform Summary</h4>
+          <p id="sumMembers">Members: 0</p>
+        </div>
+        <div>
+          <h4>Quick Info</h4>
+          <p>Min Withdraw: $0.10</p>
+          <p>Watch Reward: $0.0001</p>
+          <p>Captcha+Ad: $0.0002</p>
+          <p>Referral Bonus: $0.005</p>
+        </div>
+      </section>
+    </main>
+    <div class="footer">© 2025 Ads Click Pay</div>
   </div>
+  <script>
+    // populate summary
+    const db=APP.loadDB(); document.getElementById('sumMembers').innerText = 'Members: ' + (db.users.length||0);
+  </script>
 </body>
 </html>
