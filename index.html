@@ -1,62 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ads Click Pay</title>
+  <meta charset="UTF-8">
+  <title>Ads Click Pay 💸</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="topbar container">
-    <div class="brand">
-      <div class="logo">💸</div>
-      <div class="title">Ads Click Pay</div>
-    </div>
-    <nav class="nav">
-      <a class="btn btn-outline" href="register.html">Register</a>
-      <a class="btn btn-outline" href="login.html">Login</a>
-      <a class="btn btn-outline" href="admin.html">Admin</a>
-    </nav>
+  <div class="container">
+    <h2>Welcome to Ads Click Pay 💸</h2>
+    <div id="loading" class="loading"></div>
+    <p>Earn money by watching ads & completing simple tasks!</p>
+    <button onclick="window.location='login.html'">🔐 Login</button>
+    <button onclick="window.location='register.html'">📝 Register</button>
   </div>
-
-  <main class="container">
-    <section class="card">
-      <h1 class="huge">Welcome to Ads Click Pay</h1>
-      <p class="muted">Earn by watching ads, completing tasks & inviting friends.</p>
-      <div class="summary-row">
-        <div class="card small">
-          <h3>Total Members</h3>
-          <p id="totalMembers">0</p>
-        </div>
-        <div class="card small">
-          <h3>Total Withdrawals</h3>
-          <p id="totalWithdrawals">0</p>
-        </div>
-      </div>
-    </section>
-    <section class="card">
-      <h3>Quick Links</h3>
-      <div class="grid">
-        <a class="btn btn-primary" href="dashboard.html">Open Dashboard</a>
-        <a class="btn btn-outline" href="earn.html">Earn</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer-note">© 2025 Ads Click Pay — Mobile friendly • Dark theme</footer>
-
-  <div id="globalModal" class="modal"><div><div class="loader"></div><p id="globalModalText">Loading...</p></div></div>
-
-  <script src="js/main.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const db = APP.DBDATA;
-      document.getElementById('totalMembers').innerText = Object.keys(db.users).length;
-      document.getElementById('totalWithdrawals').innerText = db.withdraws.filter(w=>w.status==='approved').length;
-      // store bot & ads in localStorage for pages
-      localStorage.setItem('acp_bot_username', 'adsclickpaybot');
-      localStorage.setItem('acp_ads_link', 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa');
-    });
-  </script>
 </body>
 </html>
