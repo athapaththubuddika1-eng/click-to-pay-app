@@ -1,28 +1,18 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Withdraw History - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Withdraw History</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="topbar container"><div class="brand"><div class="logo">📜</div><div class="title">Withdraw History</div></div></div>
+  <div class="container">
+    <div class="topbar"><div class="brand"><div class="logo">📜</div><h1>Withdraw History</h1></div></div>
+    <main><section class="card"><ul id="history" class="list"></ul></section></main>
+  </div>
 
-  <main class="container card small">
-    <h3>Your Withdraws</h3>
-    <div id="histList"></div>
-    <div style="margin-top:12px"><a href="dashboard.html">Back</a></div>
-  </main>
-
-  <script src="js/main.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const cur = currentUser(); if(!cur) { window.location.href='login.html'; return; }
-      const list = document.getElementById('histList'); list.innerHTML='';
-      APP.DBDATA.withdraws.filter(w=>w.email===cur.email).forEach(w=>{
-        const d = document.createElement('div'); d.className='card small'; d.innerHTML = `<div>${APP.money(w.amount)} - ${w.status} - ${w.createdAt}</div>`; list.appendChild(d);
-      });
-    });
+    (function(){
+      const cur = currentUser(); if(!cur) return location.href='login.html';
+      const db = APP.loadDB(); const list = document.getElementById('history');
+      db.withdraws.filter(w=>w.email===cur.email).forEach(w=>{ const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — ${money(w.amount)} — ${w.status}`; list.appendChild(li); });
+    })();
   </script>
 </body>
 </html>
