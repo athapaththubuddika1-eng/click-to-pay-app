@@ -1,32 +1,28 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Login - Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/main.js"></script>
 </head>
-<body class="page-login">
-  <div class="topbar">
-    <a class="back" href="index.html">←</a>
-    <div class="brand">Ads Click Pay</div>
+<body>
+  <div class="topbar container">
+    <div class="brand">
+      <div class="logo">🔐</div>
+      <div class="title">Login</div>
+    </div>
   </div>
 
-  <main class="container card small">
-    <h2>Login</h2>
+  <main class="container small card">
     <form id="loginForm">
-      <label>Email<input name="email" type="email" required></label>
-      <label>Password<input name="password" type="password" required></label>
-      <button type="submit" class="btn primary">Login</button>
-      <p class="muted">Don't have account? <a href="register.html">Register</a></p>
+      <input class="input" name="email" type="email" placeholder="Email" required />
+      <input class="input" name="password" type="password" placeholder="Password" required />
+      <button class="btn btn-primary" type="submit">Login 🔐</button>
     </form>
+    <p class="muted">No account? <a href="register.html">Register</a></p>
   </main>
 
-  <div id="modalLoading" class="modal-loading hidden">
-    <div class="loader"></div>
-    <div>Loading...</div>
-  </div>
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
