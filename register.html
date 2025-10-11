@@ -1,1 +1,35 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Ads Click Pay</title><link rel='stylesheet' href='css/style.css'></head><body><div style='padding:20px'><h1>Ads Click Pay</h1><a href='register.html'>Register Page</a> | <a href='login.html'>Login</a> | <a href='admin.html'>Admin</a></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Register - Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body class="page-register">
+  <div class="topbar">
+    <a class="back" href="index.html">←</a>
+    <div class="brand">Ads Click Pay</div>
+  </div>
+
+  <main class="container card small">
+    <h2>Register</h2>
+    <form id="registerForm">
+      <label>Username<input name="username" required></label>
+      <label>Email<input name="email" type="email" required></label>
+      <label>Password<input name="password" type="password" required></label>
+      <label>Referral code (optional)<input name="referral"></label>
+
+      <button type="submit" class="btn primary">Register ✅</button>
+      <p class="muted">Already have an account? <a href="login.html">Login</a></p>
+    </form>
+  </main>
+
+  <div id="modalLoading" class="modal-loading hidden">
+    <div class="loader"></div>
+    <div>Loading...</div>
+  </div>
+</body>
+</html>
