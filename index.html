@@ -6,50 +6,45 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="splash" id="splash" style="display:none">
-    <div style="text-align:center">
-      <div class="spinner"></div>
-      <div style="margin-top:12px;color:#fff">Loading...</div>
+<div id="splash" class="splash"><div class="spinner"></div><div style="margin-top:12px;color:#fff">Loading...</div></div>
+
+<div class="app">
+  <div class="container">
+    <div class="header">
+      <div class="logo">Ads Click Pay</div>
+      <div><a href="login.html" class="button btn-ghost">Login</a></div>
     </div>
-  </div>
 
-  <div class="app">
-    <div class="container">
-      <div class="header">
-        <div class="logo">Ads Click Pay</div>
-        <div><a href="login.html" class="button btn-ghost">Login</a></div>
+    <div class="card center">
+      <h1 class="huge">💸 Ads Click Pay</h1>
+      <p class="small">Earn by watching ads & completing tasks. Referral bonuses & TON withdrawals supported.</p>
+      <div style="margin-top:12px">
+        <a href="register.html" class="button btn-primary">Get Started</a>
+        <a href="earn.html" class="button btn-ghost">Earn Now</a>
       </div>
-
-      <div class="card center">
-        <h1 class="huge">💸 Earn by watching ads</h1>
-        <p class="small">Captcha + 5s ad watch → rewards. Referral bonuses & TON withdraws supported.</p>
-        <div style="margin-top:14px">
-          <a href="register.html" class="button btn-primary">Get Started</a>
-          <a href="earn.html" class="button btn-ghost">Earn Now</a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 class="huge">Platform Summary</h3>
-        <p class="small">Total Members: <span id="totalMembers">—</span></p>
-        <p class="small">Total Withdrawals: <span id="totalWithdrawals">—</span></p>
-      </div>
-
-      <div class="footer">© 2025 Ads Click Pay</div>
     </div>
-  </div>
 
-  <script type="module">
-    import { db, ref, get } from './js/firebase.js';
-    async function loadSummary(){
-      try{
-        const usersSnap = await get(ref(db,'users'));
-        const withdrawsSnap = await get(ref(db,'withdraws'));
-        document.getElementById('totalMembers').innerText = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
-        document.getElementById('totalWithdrawals').innerText = withdrawsSnap.exists() ? Object.keys(withdrawsSnap.val()).length : 0;
-      }catch(e){ console.warn(e); }
-    }
-    loadSummary();
-  </script>
+    <div class="card">
+      <h3 class="huge">Platform Summary</h3>
+      <p class="small">Total Members: <span id="totalMembers">0</span></p>
+      <p class="small">Total Withdrawals: <span id="totalWithdrawals">0</span></p>
+    </div>
+
+    <div class="footer">© 2025 Ads Click Pay</div>
+  </div>
+</div>
+
+<script type="module">
+import { db, ref, get } from './js/firebase.js';
+async function loadSummary(){
+  try{
+    const usersSnap = await get(ref(db,'users')); const withdrawsSnap = await get(ref(db,'withdraws'));
+    document.getElementById('totalMembers').innerText = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
+    document.getElementById('totalWithdrawals').innerText = withdrawsSnap.exists() ? Object.keys(withdrawsSnap.val()).reduce((c,k)=>c+Object.keys(withdrawsSnap.val()[k]).length,0) : 0;
+  }catch(e){ console.warn(e); }
+  setTimeout(()=>document.getElementById('splash').style.display='none',800);
+}
+loadSummary();
+</script>
 </body>
 </html>
