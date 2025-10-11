@@ -1,8 +1,10 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title><link rel="stylesheet" href="css/style.css"></head>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
   <div class="app"><div class="container">
     <div class="header"><div class="logo">Admin Panel</div><div></div></div>
+
     <div class="card">
       <p class="small">Admin login</p>
       <input id="admin_email" class="input" placeholder="Admin email" />
@@ -26,73 +28,89 @@
         <h4 class="huge">Tasks</h4>
         <div class="row"><input id="taskTitle" class="input" placeholder="title" /><input id="taskUrl" class="input" placeholder="url" /><input id="taskAmt" class="input" placeholder="amount" /></div>
         <button id="addTask" class="button btn-primary">Add task</button>
-        <ul id="taskList"></ul>
+        <ul id="taskList" style="margin-top:8px"></ul>
       </div>
     </div>
 
   </div></div>
 
   <script type="module">
-    import { db, collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from './js/firebase-init.js';
+    import { db, ref, get, update, push } from './js/firebase.js';
+
     const ADMIN_EMAIL = 'hasanbuddika1@gmail.com';
     const ADMIN_PASS = 'Aabbcc.123';
+    const BOT_TOKEN = '7776385916:AAHNDwHIehk0FJ1zzdoNV8lNB5qE_6DbPks'; // move server-side for prod
+    const CHAT_ID = '5419054691';
+
     document.getElementById('adminLogin').addEventListener('click', async ()=>{
       const em = document.getElementById('admin_email').value.trim().toLowerCase();
       const pw = document.getElementById('admin_pass').value.trim();
       if(em === ADMIN_EMAIL && pw === ADMIN_PASS){
         document.getElementById('adminArea').style.display = 'block';
         document.querySelector('.card').style.display = 'none';
-        loadWithdraws(); loadTasks(); loadUsers();
+        loadWithdraws(); loadTasks();
       } else alert('Invalid admin credentials');
     });
 
     async function loadWithdraws(){
-      const wrs = await getDocs(collection(db,'withdraws'));
-      const list = document.getElementById('withdrawsList'); list.innerHTML='';
-      wrs.forEach(w => {
-        const d = w.data();
+      const wSnap = await get(ref(db,'withdraws'));
+      const list = document.getElementById('withdrawsList'); list.innerHTML = '';
+      if(!wSnap.exists()) return;
+      const ws = wSnap.val();
+      for(const id in ws){
+        const d = ws[id];
         const li = document.createElement('li');
-        li.style.padding='8px';
-        li.style.borderBottom='1px solid rgba(255,255,255,0.03)';
-        li.innerHTML = `<div><strong>${d.email}</strong> — ${d.amount} — ${d.status}</div>
-          <div style="margin-top:6px"><button data-id="${w.id}" class="approve button btn-primary">Approve</button> <button data-id="${w.id}" class="reject button btn-ghost">Reject</button></div>`;
+        li.style.padding='8px'; li.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+        li.innerHTML = `<div><strong>${d.email}</strong> — $${d.amount} — ${d.status}</div>
+          <div style="margin-top:6px"><button data-id="${id}" class="approve button btn-primary">Approve</button> <button data-id="${id}" class="reject button btn-ghost">Reject</button></div>`;
         list.appendChild(li);
-      });
+      }
       document.querySelectorAll('.approve').forEach(b=>b.addEventListener('click', async (e)=>{
-        const id = e.target.dataset.id; await updateDoc(doc(db,'withdraws',id), { status:'approved', processedAt: new Date() });
-        // note: send telegram notify or do TON transfer step here
-        alert('Approved');
+        const id = e.target.dataset.id;
+        await update(ref(db,`withdraws/${id}`), { status:'approved', processedAt:new Date().toISOString() });
+        // notify user via telegram (optional)
+        const w = (await get(ref(db,`withdraws/${id}`))).val();
+        try{
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: CHAT_ID, text: `✅ Withdraw Approved\nUser: ${w.email}\nAmount: $${w.amount}\nAddress: ${w.address}` }) });
+        }catch(e){}
         loadWithdraws();
       }));
       document.querySelectorAll('.reject').forEach(b=>b.addEventListener('click', async (e)=>{
         const id = e.target.dataset.id;
-        const wsnap = await getDocs(collection(db,'withdraws')); // find doc
-        // simple: mark rejected
-        await updateDoc(doc(db,'withdraws',id), { status:'rejected', processedAt: new Date() });
-        alert('Rejected');
+        const wSnap = (await get(ref(db,`withdraws/${id}`))).val();
+        // if reject -> refund amount to user
+        const uid = wSnap.uid;
+        const uSnap = (await get(ref(db,`users/${uid}`))).val();
+        await update(ref(db,`users/${uid}`), { balance: Number(uSnap.balance||0) + Number(wSnap.amount) });
+        await update(ref(db,`withdraws/${id}`), { status:'rejected', processedAt:new Date().toISOString() });
         loadWithdraws();
       }));
     }
 
-    async function loadTasks(){ const tasks = await getDocs(collection(db,'tasks')); const tl = document.getElementById('taskList'); tl.innerHTML=''; tasks.forEach(t=>{ const li = document.createElement('li'); li.innerText = t.data().title + ' — ' + t.data().amount; tl.appendChild(li); }); }
+    async function loadTasks(){
+      const tSnap = await get(ref(db,'tasks'));
+      const tl = document.getElementById('taskList'); tl.innerHTML='';
+      if(!tSnap.exists()) return;
+      const ts = tSnap.val();
+      for(const k in ts){ const t=ts[k]; const li=document.createElement('li'); li.innerText = `${t.title} — $${t.amount}`; tl.appendChild(li); }
+    }
+
     document.getElementById('addTask').addEventListener('click', async ()=>{
-      const title = document.getElementById('taskTitle').value, url = document.getElementById('taskUrl').value, amt = Number(document.getElementById('taskAmt').value || 0);
+      const title = document.getElementById('taskTitle').value.trim(), url = document.getElementById('taskUrl').value.trim(), amt = Number(document.getElementById('taskAmt').value || 0);
       if(!title||!url||!amt) return alert('Fill');
-      await addDoc(collection(db,'tasks'), { title, url, amount:amt, createdAt: new Date() });
+      await push(ref(db,'tasks'), { title, url, amount: amt, createdAt: new Date().toISOString() });
       alert('Task added'); loadTasks();
     });
 
-    async function loadUsers(){ /* optional view users */ }
     document.getElementById('doAdd').addEventListener('click', async ()=>{
-      const email = document.getElementById('addEmail').value.trim().toLowerCase();
-      const amt = Number(document.getElementById('addAmt').value || 0);
+      const email = document.getElementById('addEmail').value.trim().toLowerCase(), amt = Number(document.getElementById('addAmt').value || 0);
       if(!email||!amt) return alert('Fill');
       // find user by email
-      const us = await getDocs(collection(db,'users'));
-      let found = null;
-      us.forEach(u=>{ if(u.data().email === email) found = { id:u.id, data:u.data() }; });
+      const uSnap = await get(ref(db,'users')); if(!uSnap.exists()) return alert('No users');
+      const users = uSnap.val(); let found=null;
+      for(const k in users){ if(users[k].email === email){ found = { id:k, data:users[k] }; break; } }
       if(!found) return alert('User not found');
-      await updateDoc(doc(db,'users',found.id), { balance: (found.data.balance||0) + amt });
+      await update(ref(db,`users/${found.id}`), { balance: Number(found.data.balance||0) + amt });
       alert('Balance added');
     });
   </script>
