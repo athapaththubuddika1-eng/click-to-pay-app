@@ -1,40 +1,31 @@
-// Earn page logic
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', ()=>{
   const watchBtn = document.getElementById('watchAdBtn');
-  const adCountdown = document.getElementById('adCountdown');
-  const captchaWrap = document.getElementById('captchaWrap');
-  const captchaBox = document.getElementById('captchaBox');
+  const adTimer = document.getElementById('adTimer');
   const captchaSubmit = document.getElementById('captchaSubmit');
-
   if(watchBtn){
-    watchBtn.addEventListener('click',()=>{
-      // show captcha
-      captchaWrap.classList.remove('hidden');
+    watchBtn.addEventListener('click', ()=>{
+      const user = APP.currentUser();
+      if(!user) return alert('Login required');
+      const adUrl = localStorage.getItem('acp_ads_link') || (window.ADS_LINK || '');
+      const w = window.open(adUrl, '_blank');
+      if(!w) return alert('Popup blocked');
+      let t=5; adTimer.textContent = 'Wait ' + t + 's...';
+      const iv = setInterval(()=>{ t--; adTimer.textContent = 'Wait ' + t + 's...'; if(t<=0){ clearInterval(iv); adTimer.textContent='Done'; w.close();
+        const db = APP.DBDATA; const u = db.users[user.email]; u.balance = Number(u.balance) + Number(db.settings.watchReward); APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(db.settings.watchReward)); window.location.reload();
+      } },1000);
     });
   }
-
   if(captchaSubmit){
-    captchaSubmit.addEventListener('click',()=>{
-      if(!captchaBox.checked) return alert('Please check captcha');
-      // open ad link in new tab (triggered by user click to avoid popup blocker)
-      const adUrl = localStorage.getItem('acp_ad_url') || 'https://www.revenuecpmgate.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';
-      const win = window.open(adUrl, '_blank');
-      if(!win) { alert('Popup blocked. Allow popups for this site.'); return; }
-      // countdown 5s then enable claim
-      let t=5; adCountdown.textContent = `Ad open - wait ${t}s...`;
-      const iv = setInterval(()=>{
-        t--; adCountdown.textContent = `Ad open - wait ${t}s...`;
-        if(t<=0){ clearInterval(iv); adCountdown.textContent = 'You may close the ad and your reward will be applied shortly.'; 
-          // give reward to current user
-          const user = APP.currentUser();
-          if(!user){ alert('Login first'); return; }
-          APP.DB.users[user.email].balance = Number(APP.DB.users[user.email].balance || 0) + Number(APP.DB.settings.watchReward);
-          APP.DB.save();
-          alert('Reward added: '+formatMoney(APP.DB.settings.watchReward));
-          // refresh
-          window.location.reload();
-        }
-      },1000);
+    captchaSubmit.addEventListener('click', ()=>{
+      const checked = document.getElementById('captchaBox').checked;
+      if(!checked) return alert('Please check captcha');
+      const user = APP.currentUser(); if(!user) return alert('Login required');
+      const adUrl = localStorage.getItem('acp_ads_link') || (window.ADS_LINK || '');
+      const w = window.open(adUrl, '_blank'); if(!w) return alert('Popup blocked');
+      let t=5; const adTimer2 = document.getElementById('adTimer2'); adTimer2.textContent='Wait ' + t + 's...';
+      const iv = setInterval(()=>{ t--; adTimer2.textContent='Wait ' + t + 's...'; if(t<=0){ clearInterval(iv); adTimer2.textContent='Done'; w.close();
+        const db = APP.DBDATA; const u = db.users[user.email]; u.balance = Number(u.balance) + Number(db.settings.captchaReward); APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(db.settings.captchaReward)); window.location.reload();
+      } },1000);
     });
   }
 });
