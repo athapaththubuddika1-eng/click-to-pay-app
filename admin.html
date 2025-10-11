@@ -1,61 +1,53 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin - Ads Click Pay</title>
-<link rel="stylesheet" href="css/style.css">
-<script defer src="js/admin.js"></script>
-<script defer src="js/main.js"></script>
-</head>
-<body class="page-admin">
-  <div class="topbar">
-    <a class="back" href="index.html">←</a><div class="brand">Admin Panel</div>
-  </div>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Admin Panel</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+  <div class="topbar container"><div class="brand"><div class="logo">🛠️</div><div class="title">Admin Panel</div></div></div>
 
   <main class="container">
-    <section class="card">
-      <h2>Admin Login</h2>
+    <div class="card small">
+      <h3>Admin Login</h3>
       <form id="adminLoginForm">
-        <label>Email <input name="email" type="email" required></label>
-        <label>Password <input name="password" type="password" required></label>
-        <button class="btn primary" type="submit">Login</button>
+        <input class="input" name="email" type="email" placeholder="Admin email" required />
+        <input class="input" name="password" type="password" placeholder="Admin password" required />
+        <button class="btn btn-primary" type="submit">Login</button>
       </form>
-    </section>
+    </div>
 
-    <section id="adminControls" class="card hidden">
-      <h2>Admin Controls</h2>
-
-      <div class="admin-block">
-        <h3>Add balance by email</h3>
+    <div id="adminPanel" class="hidden">
+      <div class="card">
+        <h4>Add Balance by Email</h4>
         <form id="addBalanceForm">
-          <label>Email <input name="email" type="email" required></label>
-          <label>Amount <input name="amount" type="number" step="0.01" required></label>
-          <button class="btn">Add Balance</button>
+          <input class="input" name="email" type="email" placeholder="User email" required />
+          <input class="input" name="amount" type="number" step="0.01" placeholder="Amount" required />
+          <button class="btn" type="submit">Add Balance</button>
         </form>
       </div>
 
-      <div class="admin-block">
-        <h3>Withdraw Requests</h3>
+      <div class="card">
+        <h4>Tasks (Add)</h4>
+        <form id="addTaskForm">
+          <input class="input" name="title" placeholder="Task Title" required />
+          <input class="input" name="url" placeholder="Task URL (open on join)" required />
+          <input class="input" name="amount" type="number" step="0.0001" placeholder="Reward amount" required />
+          <button class="btn" type="submit">Add Task</button>
+        </form>
+        <div id="adminTasks" style="margin-top:12px"></div>
+      </div>
+
+      <div class="card">
+        <h4>Withdraw Requests</h4>
         <div id="adminWithdraws"></div>
       </div>
 
-      <div class="admin-block">
-        <h3>Tasks</h3>
-        <form id="addTaskForm">
-          <label>Title<input name="title" required></label>
-          <label>URL<input name="url" required></label>
-          <label>Reward<input name="reward" type="number" step="0.0001" value="0.0002"></label>
-          <button class="btn">Add Task</button>
-        </form>
-        <div id="adminTasks"></div>
-      </div>
-
-      <div class="admin-block">
-        <h3>Users</h3>
+      <div class="card">
+        <h4>Users</h4>
         <div id="adminUsers"></div>
       </div>
-    </section>
+    </div>
   </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>
