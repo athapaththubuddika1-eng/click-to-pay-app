@@ -1,44 +1,36 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Earn - Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="js/earn.js"></script>
-  <script defer src="js/main.js"></script>
 </head>
-<body class="page-earn">
-  <div class="topbar">
-    <a class="back" href="dashboard.html">←</a>
-    <div class="brand">Ads Click Pay</div>
+<body>
+  <div class="topbar container">
+    <div class="brand">
+      <div class="logo">🎯</div>
+      <div class="title">Earn</div>
+    </div>
   </div>
 
   <main class="container">
-    <section class="card">
-      <h2>Watch Ad</h2>
-      <p>Earn $0.0001 per ad watched</p>
-      <button id="watchAdBtn" class="btn gradient">▶ Watch Ad</button>
-      <div id="adCountdown" class="muted"></div>
-      <div id="captchaWrap" class="captcha hidden card">
-        <label><input id="captchaBox" type="checkbox"> I'm not a robot (demo)</label>
-        <button id="captchaSubmit" class="btn primary">Submit + Open Ad</button>
-      </div>
-    </section>
+    <div class="card small">
+      <h3>Watch Ads</h3>
+      <p>Reward: <strong>$0.0001</strong></p>
+      <div id="adTimer" class="muted"></div>
+      <button id="watchAdBtn" class="btn btn-primary">▶ Watch Ad</button>
+    </div>
 
-    <section class="card">
-      <h2>Captcha Task</h2>
-      <p>Complete captcha then open ad — reward applies</p>
-    </section>
+    <div class="card small">
+      <h3>Captcha + Ad</h3>
+      <label><input id="captchaBox" type="checkbox"> I'm human</label>
+      <div id="adTimer2" class="muted"></div>
+      <button id="captchaSubmit" class="btn btn-primary">Submit + Open Ad</button>
+    </div>
   </main>
 
-  <footer class="bottom-nav">
-    <a href="index.html">Home</a>
-    <a href="earn.html" class="active">Earn</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="referral.html">Referral</a>
-    <a href="profile.html">Profile</a>
-    <a href="admin.html">Admin</a>
-  </footer>
+  <script>window.ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';</script>
+  <script src="js/main.js"></script>
+  <script src="js/earn.js"></script>
 </body>
 </html>
