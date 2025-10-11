@@ -1,222 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earn 💰 | Ads Click Pay</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Poppins", sans-serif;
-    }
-
-    body {
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      background: linear-gradient(145deg, #0f172a, #1e293b);
-      color: #fff;
-      padding: 20px;
-    }
-
-    .back-btn {
-      align-self: flex-start;
-      margin-bottom: 20px;
-      background: #1e40af;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-    }
-
-    .back-btn:hover {
-      background: #2563eb;
-      transform: scale(1.03);
-    }
-
-    .container {
-      text-align: center;
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      padding: 25px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      animation: fadeIn 0.6s ease-in-out;
-    }
-
-    h2 {
-      font-size: 1.6rem;
-      margin-bottom: 12px;
-    }
-
-    p {
-      font-size: 0.95rem;
-      color: #cbd5e1;
-      margin-bottom: 16px;
-    }
-
-    #captchaValue {
-      background: #1e293b;
-      padding: 10px 20px;
-      font-size: 1.3rem;
-      border-radius: 10px;
-      letter-spacing: 2px;
-      font-weight: bold;
-      display: inline-block;
-      margin-bottom: 8px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 1rem;
-      margin-bottom: 10px;
-      background: #334155;
-      color: white;
-    }
-
-    button.action-btn {
-      width: 100%;
-      margin-top: 8px;
-      padding: 12px;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      color: white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    #submitCaptcha {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-    }
-
-    #submitCaptcha:hover {
-      background: linear-gradient(90deg, #15803d, #16a34a);
-      transform: scale(1.04);
-    }
-
-    #watchOnly {
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
-    }
-
-    #watchOnly:hover {
-      background: linear-gradient(90deg, #2563eb, #1d4ed8);
-      transform: scale(1.04);
-    }
-
-    #reloadCaptcha {
-      margin-left: 10px;
-      background: transparent;
-      color: #38bdf8;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    #reloadCaptcha:hover {
-      transform: rotate(120deg);
-    }
-
-    #status {
-      margin-top: 15px;
-      color: #facc15;
-      font-size: 0.95rem;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earn</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
+  <div class="app">
+    <div class="container">
+      <div class="header"><div class="logo">Earn</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
 
-  <!-- 🔹 Back Button -->
-  <button class="back-btn" id="backDashboard">⬅ Back to Dashboard</button>
+      <div class="card center">
+        <h3 class="huge">🎯 Watch Ads & Earn</h3>
+        <p class="small">Captcha + watch ads → rewards</p>
 
-  <!-- 🔹 Main Earn Box -->
-  <div class="container">
-    <h2>🎯 Earn Rewards</h2>
-    <p>Complete captcha & watch ad to earn instant rewards!</p>
+        <div style="margin:12px 0">
+          <div style="display:flex;justify-content:center;align-items:center;gap:8px">
+            <div id="captchaValue" class="small" style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;font-weight:800;letter-spacing:3px">ABCDE</div>
+            <button id="reloadCaptcha" class="button btn-ghost">🔄</button>
+          </div>
+          <input id="captchaInput" class="input" placeholder="Type captcha here" />
+          <button id="submitCaptcha" class="button btn-primary" style="width:100%;margin-top:8px">▶ Submit & Open Ad</button>
+          <button id="watchBtn" class="button btn-green" style="width:100%;margin-top:8px">▶ Watch Ad (No Captcha)</button>
+        </div>
 
-    <div>
-      <span id="captchaValue">9WRSR</span>
-      <button id="reloadCaptcha" title="Reload captcha">🔄</button>
+        <p class="small">Captcha reward: <strong>$0.000200</strong> · Ad reward: <strong>$0.000150</strong></p>
+        <p id="status" class="small" style="margin-top:8px"></p>
+      </div>
     </div>
-
-    <input id="captchaInput" type="text" placeholder="Enter captcha">
-
-    <button id="submitCaptcha" class="action-btn">▶ Submit & Open Ad</button>
-    <button id="watchOnly" class="action-btn">▶ Watch Ad (No Captcha)</button>
-
-    <p id="status">⏳ Waiting for captcha...</p>
   </div>
 
-  <script>
-    const adsLink = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { doc, getDoc, updateDoc, serverTimestamp, addDoc, collection } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
-    // Captcha generation
-    const captchaValue = document.getElementById("captchaValue");
-    const reloadBtn = document.getElementById("reloadCaptcha");
-    const input = document.getElementById("captchaInput");
-    const submit = document.getElementById("submitCaptcha");
-    const watch = document.getElementById("watchOnly");
-    const status = document.getElementById("status");
+    const ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';
+    const CAPTCHA_USD = 0.0002;
+    const AD_USD = 0.00015;
 
-    function genCaptcha() {
+    function genCaptcha(){
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let cap = "";
-      for (let i = 0; i < 5; i++) cap += chars[Math.floor(Math.random() * chars.length)];
-      captchaValue.textContent = cap;
+      let s=''; for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length));
+      document.getElementById('captchaValue').innerText = s;
     }
-    reloadBtn.onclick = genCaptcha;
-    genCaptcha();
+    genCaptcha(); document.getElementById('reloadCaptcha').onclick = genCaptcha;
 
-    submit.onclick = () => {
-      if (input.value.trim().toUpperCase() === captchaValue.textContent) {
-        status.textContent = "✅ Verified! Opening ad...";
-        setTimeout(() => {
-          window.open(adsLink, "_blank");
-          status.textContent = "🎉 Ad opened! Wait 5s to earn $0.0002";
-        }, 800);
-      } else {
-        status.textContent = "❌ Wrong captcha, try again!";
-      }
-    };
+    function openInTelegram(url){
+      try{
+        if(window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function'){
+          window.Telegram.WebApp.openLink(url); return true;
+        }
+      }catch(e){}
+      // fallback new tab
+      const w = window.open(url,'_blank'); if(w) return true;
+      window.location.href = url; return true;
+    }
 
-    watch.onclick = () => {
-      status.textContent = "🔁 Opening ad...";
-      setTimeout(() => {
-        window.open(adsLink, "_blank");
-        status.textContent = "🎬 Ad opened! Wait 5s to earn $0.00015";
-      }, 600);
-    };
+    async function addBalanceToUser(uid, amount){
+      const uref = doc(db,'users',uid);
+      await updateDoc(uref, { balance: ( (await getDoc(uref)).data().balance || 0) + amount });
+    }
 
-    document.getElementById("backDashboard").onclick = () => {
-      window.location.href = "dashboard.html";
-    };
+    function getUid(){ return localStorage.getItem('uid'); }
+
+    // Captcha submit flow
+    document.getElementById('submitCaptcha').addEventListener('click', async ()=>{
+      const uid = getUid(); if(!uid){ alert('Login first'); location.href='login.html'; return; }
+      const typed = (document.getElementById('captchaInput').value||'').trim().toUpperCase();
+      const real = document.getElementById('captchaValue').innerText.trim().toUpperCase();
+      if(!typed){ alert('Type captcha'); return; }
+      if(typed !== real){ alert('Wrong captcha'); genCaptcha(); return; }
+
+      // open ad in-app then start countdown on this page
+      openInTelegram(ADS_LINK);
+      document.getElementById('status').innerText = '⏳ Ad opened — counting 5s...';
+      document.getElementById('submitCaptcha').disabled = true;
+      let t=5;
+      const iv = setInterval(()=>{ t--; document.getElementById('status').innerText = `⏳ Counting ${t}s...`; if(t<0){ clearInterval(iv); (async ()=>{
+        try{
+          // award captcha + ad after watch
+          await addBalanceToUser(uid, CAPTCHA_USD + AD_USD);
+          // record withdrawal? no — record activity
+          await addDoc(collection(db,'activities'), { uid, type:'ad_watch', amount: CAPTCHA_USD + AD_USD, createdAt: serverTimestamp() });
+          document.getElementById('status').innerText = `✅ Earned $${(CAPTCHA_USD+AD_USD).toFixed(6)}!`;
+          document.getElementById('submitCaptcha').disabled = false;
+          document.getElementById('captchaInput').value='';
+          genCaptcha();
+        }catch(e){ console.error(e); alert('Error awarding'); document.getElementById('submitCaptcha').disabled = false; }
+      })() } }, 1000);
+    });
+
+    // watch-only
+    document.getElementById('watchBtn').addEventListener('click', ()=>{
+      const uid = getUid(); if(!uid){ alert('Login first'); location.href='login.html'; return; }
+      openInTelegram(ADS_LINK);
+      document.getElementById('status').innerText = '⏳ Ad opened — counting 5s...';
+      document.getElementById('watchBtn').disabled = true;
+      let t=5; const iv = setInterval(()=>{ t--; document.getElementById('status').innerText = `⏳ Counting ${t}s...`; if(t<0){ clearInterval(iv); (async ()=>{
+        try{ await addBalanceToUser(uid, AD_USD); await addDoc(collection(db,'activities'), { uid, type:'ad_watch_only', amount: AD_USD, createdAt: serverTimestamp()}); document.getElementById('status').innerText = `✅ Earned $${AD_USD.toFixed(6)}!`; document.getElementById('watchBtn').disabled = false; }catch(e){console.error(e)} })() } },1000);
+    });
   </script>
-
 </body>
 </html>
