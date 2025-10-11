@@ -11,36 +11,40 @@
         <input id="w_amount" class="input" placeholder="Amount (e.g. 0.1)" />
         <input id="w_address" class="input" placeholder="TON Wallet Address" />
         <button id="doWithdraw" class="button btn-primary">Request Withdraw</button>
-        <p id="w_status" class="small"></p>
+        <p id="w_status" class="small" style="margin-top:8px"></p>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { db, addDoc, collection, getDoc, doc } from './js/firebase-init.js';
-    import { getDoc as getDoc2 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+    import { db, ref, get, push, update } from './js/firebase.js';
+
+    const BOT_TOKEN = '7776385916:AAHNDwHIehk0FJ1zzdoNV8lNB5qE_6DbPks'; // consider moving server-side
+    const CHAT_ID = '5419054691';
 
     document.getElementById('doWithdraw').addEventListener('click', async ()=>{
       const uid = localStorage.getItem('uid'); if(!uid){ alert('Login first'); location.href='login.html'; return; }
       const amount = Number(document.getElementById('w_amount').value || 0);
       const addr = document.getElementById('w_address').value.trim();
       if(amount < 0.1){ alert('Minimum is $0.1'); return; }
-      if(!addr){ alert('Enter address'); return; }
-      // deduct balance immediately
-      const uRef = doc(db,'users',uid);
-      const uSnap = await getDoc(uRef);
+      if(!addr){ alert('Enter TON address'); return; }
+
+      const userRef = ref(db,`users/${uid}`);
+      const uSnap = await get(userRef);
       if(!uSnap.exists()) return alert('User missing');
-      const curBal = (uSnap.data().balance || 0);
+      const curBal = Number(uSnap.val().balance || 0);
       if(curBal < amount) return alert('Not enough balance');
-      // create withdraw record and deduct
-      await addDoc(collection(db,'withdraws'), { uid, email: uSnap.data().email, amount, address:addr, status:'pending', createdAt: serverTimestamp() });
-      await updateDoc(uRef, { balance: curBal - amount });
+
+      // deduct and push withdraw request
+      await update(userRef, { balance: curBal - amount });
+      const wRef = ref(db,'withdraws');
+      const newW = await push(wRef, { uid, email: uSnap.val().email, amount, address: addr, status:'pending', ts:new Date().toISOString() });
+
       document.getElementById('w_status').innerText = '✅ Withdraw request sent (pending).';
-      // notify admin via Telegram (client side) - use server for production
+
+      // notify admin via Telegram (client-side)
       try{
-        const BOT_TOKEN = '7776385916:AAHNDwHIehk0FJ1zzdoNV8lNB5qE_6DbPks';
-        const CHAT_ID = '5419054691';
-        const text = `📥 Withdraw Request\nUser: ${uSnap.data().username || uSnap.data().email}\nAmount: $${amount}\nAddress: ${addr}\nStatus: pending`;
+        const text = `📥 Withdraw Request\nUser: ${uSnap.val().username || uSnap.val().email}\nAmount: $${amount}\nAddress: ${addr}\nStatus: pending`;
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: CHAT_ID, text }) });
       }catch(e){ console.warn('TG notify failed', e); }
     });
