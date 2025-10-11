@@ -1,28 +1,31 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login - Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+  <script src="js/auth.js" defer></script>
 </head>
 <body>
-  <div class="topbar container">
-    <div class="brand">
-      <div class="logo">🔐</div>
-      <div class="title">Login</div>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo">🔐</div><h1>Login</h1></div>
+      <div class="nav"><a href="index.html">Home</a><a href="register.html">Register</a></div>
     </div>
+
+    <main>
+      <section class="card small">
+        <h2 class="huge">Welcome back</h2>
+        <form id="loginForm">
+          <input class="input" name="email" type="email" placeholder="Email" required />
+          <input class="input" name="password" type="password" placeholder="Password" required />
+          <button class="btn btn-primary" type="submit">Login 🔐</button>
+        </form>
+        <p style="margin-top:12px">Don't have an account? <a href="register.html">Register</a></p>
+      </section>
+    </main>
   </div>
-
-  <main class="container small card">
-    <form id="loginForm">
-      <input class="input" name="email" type="email" placeholder="Email" required />
-      <input class="input" name="password" type="password" placeholder="Password" required />
-      <button class="btn btn-primary" type="submit">Login 🔐</button>
-    </form>
-    <p class="muted">No account? <a href="register.html">Register</a></p>
-  </main>
-
-  <script src="js/main.js"></script>
-  <script src="js/auth.js"></script>
 </body>
 </html>
