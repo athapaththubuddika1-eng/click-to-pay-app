@@ -5,78 +5,58 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="js/main.js"></script>
 </head>
-<body class="page-home">
-  <div id="app">
-    <header class="topbar">
-      <div class="brand">
-        <img src="img/logo1.png" alt="logo" class="logo" onerror="this.style.display='none'">
-        <span>Ads Click Pay</span>
-      </div>
-      <nav class="nav">
-        <a href="index.html">Home</a>
-        <a href="register.html">Register</a>
-        <a href="login.html">Login</a>
-        <a id="adminTab" href="admin.html">Admin</a>
-      </nav>
-    </header>
-
-    <main class="container">
-      <div class="loading-banner" id="globalLoading" aria-hidden="true">
-        <div class="loader"></div>
-        <div class="loading-text">Loading Ads Click Pay...</div>
-      </div>
-
-      <section class="hero card">
-        <h1>Welcome to Ads Click Pay</h1>
-        <p>Join our Telegram channel, watch ads, invite friends — earn micro payments.</p>
-        <div class="cta">
-          <a class="btn primary" id="btnGetStarted" href="register.html">Get Started</a>
-          <a class="btn outline" id="btnLogin" href="login.html">Login</a>
-        </div>
-        <div class="hero-image">
-          <!-- removed imgur embed -- leave blank or local -->
-        </div>
-      </section>
-
-      <section class="summary card" id="appSummary">
-        <h2>Platform Summary</h2>
-        <div class="summary-grid">
-          <div>
-            <h3>Total Members</h3>
-            <p id="totalMembers">0</p>
-          </div>
-          <div>
-            <h3>Total Withdrawals</h3>
-            <p id="totalWithdraws">0</p>
-          </div>
-          <div>
-            <h3>Total Withdraw Amount</h3>
-            <p id="totalWithdrawAmount">$0.00</p>
-          </div>
-          <div>
-            <h3>Quick Info</h3>
-            <ul>
-              <li>Min Withdraw: <strong>$0.10</strong></li>
-              <li>Watch Ads Reward: <strong>$0.0002</strong></li>
-              <li>Captcha + Ads Reward: <strong>$0.0002</strong></li>
-              <li>Referral Bonus: <strong>$0.005</strong></li>
-            </ul>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="bottom-nav">
-      <a href="index.html">Home</a>
-      <a href="earn.html">Earn</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="referral.html">Referral</a>
-      <a href="profile.html">Profile</a>
-      <a href="admin.html">Admin</a>
-    </footer>
-
+<body>
+  <div class="topbar container">
+    <div class="brand">
+      <div class="logo">💸</div>
+      <div class="title">Ads Click Pay</div>
+    </div>
+    <nav class="nav">
+      <a class="btn btn-outline" href="register.html">Register</a>
+      <a class="btn btn-outline" href="login.html">Login</a>
+      <a class="btn btn-outline" href="admin.html">Admin</a>
+    </nav>
   </div>
+
+  <main class="container">
+    <section class="card">
+      <h1 class="huge">Welcome to Ads Click Pay</h1>
+      <p class="muted">Earn by watching ads, completing tasks & inviting friends.</p>
+      <div class="summary-row">
+        <div class="card small">
+          <h3>Total Members</h3>
+          <p id="totalMembers">0</p>
+        </div>
+        <div class="card small">
+          <h3>Total Withdrawals</h3>
+          <p id="totalWithdrawals">0</p>
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <h3>Quick Links</h3>
+      <div class="grid">
+        <a class="btn btn-primary" href="dashboard.html">Open Dashboard</a>
+        <a class="btn btn-outline" href="earn.html">Earn</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-note">© 2025 Ads Click Pay — Mobile friendly • Dark theme</footer>
+
+  <div id="globalModal" class="modal"><div><div class="loader"></div><p id="globalModalText">Loading...</p></div></div>
+
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const db = APP.DBDATA;
+      document.getElementById('totalMembers').innerText = Object.keys(db.users).length;
+      document.getElementById('totalWithdrawals').innerText = db.withdraws.filter(w=>w.status==='approved').length;
+      // store bot & ads in localStorage for pages
+      localStorage.setItem('acp_bot_username', 'adsclickpaybot');
+      localStorage.setItem('acp_ads_link', 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa');
+    });
+  </script>
 </body>
 </html>
