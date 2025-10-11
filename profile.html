@@ -1,27 +1,18 @@
 <!doctype html>
-<html lang="en">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Profile</title><link rel="stylesheet" href="css/style.css"></head>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Profile</title><link rel="stylesheet" href="css/style.css"><script src="js/auth.js" defer></script></head>
 <body>
-  <div class="topbar container"><div class="brand"><div class="logo">👤</div><div class="title">Profile</div></div></div>
-
-  <main class="container small card">
-    <h3>Profile</h3>
-    <form id="profileForm">
-      <input class="input" name="username" placeholder="Username" />
-      <input class="input" name="address" placeholder="TON Address" />
-      <button class="btn btn-primary" type="submit">Save</button>
-    </form>
-    <div style="margin-top:12px"><button class="btn" onclick="logout()">Logout</button></div>
-  </main>
-
-  <script src="js/main.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const cur = currentUser(); if(!cur) { window.location.href='login.html'; return; }
-      const u = APP.DBDATA.users[cur.email];
-      const form = document.getElementById('profileForm'); form.username.value = u.username || ''; form.address.value = u.address || '';
-      form.addEventListener('submit',(e)=>{ e.preventDefault(); const fd=new FormData(form); const d=Object.fromEntries(fd.entries()); u.username=d.username; u.address=d.address; APP.saveDB(APP.DBDATA); localStorage.setItem('acp_current', JSON.stringify({ email:u.email, username:u.username })); alert('Saved'); });
-    });
-  </script>
+  <div class="container">
+    <div class="topbar"><div class="brand"><div class="logo">👤</div><h1>Profile</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <main><section class="card small">
+      <form id="profileForm">
+        <label>Username <input class="input" name="username" required /></label>
+        <label>Email <input class="input" name="email" required /></label>
+        <label>TON Address <input class="input" name="address" /></label>
+        <button class="btn btn-primary">Save</button>
+        <div style="margin-top:12px"><button type="button" class="btn btn-ghost" onclick="logout()">Logout</button></div>
+      </form>
+    </section></main>
+  </div>
 </body>
 </html>
