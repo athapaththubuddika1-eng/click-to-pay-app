@@ -1,67 +1,49 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Withdraw — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-</head>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Withdraw</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand"><div class="logo">🏧</div><h1>Withdraw</h1></div>
-      <div class="nav"><a href="dashboard.html">Dashboard</a></div>
+  <div class="app">
+    <div class="container">
+      <div class="header"><div class="logo">Withdraw</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
+
+      <div class="card">
+        <p class="small">Minimum withdraw: <strong>$0.1</strong></p>
+        <input id="w_amount" class="input" placeholder="Amount (e.g. 0.1)" />
+        <input id="w_address" class="input" placeholder="TON Wallet Address" />
+        <button id="doWithdraw" class="button btn-primary">Request Withdraw</button>
+        <p id="w_status" class="small"></p>
+      </div>
     </div>
-
-    <main>
-      <section class="card small">
-        <h3>Request Withdraw</h3>
-        <form id="withdrawForm">
-          <input class="input" name="address" placeholder="TON Address" required />
-          <input class="input" name="amount" type="number" step="0.01" placeholder="Amount" required />
-          <button class="btn btn-primary" type="submit">Submit Withdraw</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <h3>Your Withdraw History</h3>
-        <ul id="myWithdraws" class="list"></ul>
-      </section>
-    </main>
   </div>
 
-  <script>
-    (function(){
-      const cur = JSON.parse(localStorage.getItem('acp_user')||'null'); if(!cur) return location.href='login.html';
-      const db = JSON.parse(localStorage.getItem('acp_db_v1')||'{}');
-      const form = document.getElementById('withdrawForm');
-      const list = document.getElementById('myWithdraws');
+  <script type="module">
+    import { db, addDoc, collection, getDoc, doc } from './js/firebase-init.js';
+    import { getDoc as getDoc2 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
-      function refreshList(){ list.innerHTML=''; (db.withdraws||[]).filter(w=>w.email===cur.email).forEach(w=>{ const li=document.createElement('li'); li.textContent = `${w.createdAt.split('T')[0]} — $${Number(w.amount).toFixed(4)} — ${w.status}`; list.appendChild(li); }); }
-
-      refreshList();
-      form.addEventListener('submit', e=>{
-        e.preventDefault();
-        const fd = new FormData(form); const data = Object.fromEntries(fd.entries());
-        const amt = Number(data.amount);
-        if(amt < db.settings.minWithdraw) return alert('Minimum withdraw $' + db.settings.minWithdraw);
-        const u = (db.users||[]).find(x=>x.email===cur.email);
-        if(Number(u.balance) < amt) return alert('Insufficient balance');
-        const today = new Date().toISOString().slice(0,10);
-        const todayCount = (db.withdraws||[]).filter(w=>w.email===cur.email && w.createdAt.slice(0,10)===today).length;
-        if(todayCount >= (db.settings.dailyWithdrawLimit||1)) return alert('Daily withdraw limit reached');
-        u.balance = Number(u.balance) - amt;
-        const req = { id: (Math.random().toString(36).slice(2,12)).toUpperCase(), email:cur.email, amount:amt, address:data.address, status:'pending', createdAt:new Date().toISOString() };
-        db.withdraws = db.withdraws || []; db.withdraws.push(req);
-        localStorage.setItem('acp_db_v1', JSON.stringify(db));
-        localStorage.setItem('acp_user', JSON.stringify({ email:u.email, username:u.username }));
-        alert('Withdraw requested');
-        refreshList();
-        // notify admin
-        fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text:`📥 Withdraw Request\nUser: ${u.username}\nAmount: $${amt}\nAddress: ${data.address}\nStatus: pending` }) }).catch(()=>{});
-      });
-    })();
+    document.getElementById('doWithdraw').addEventListener('click', async ()=>{
+      const uid = localStorage.getItem('uid'); if(!uid){ alert('Login first'); location.href='login.html'; return; }
+      const amount = Number(document.getElementById('w_amount').value || 0);
+      const addr = document.getElementById('w_address').value.trim();
+      if(amount < 0.1){ alert('Minimum is $0.1'); return; }
+      if(!addr){ alert('Enter address'); return; }
+      // deduct balance immediately
+      const uRef = doc(db,'users',uid);
+      const uSnap = await getDoc(uRef);
+      if(!uSnap.exists()) return alert('User missing');
+      const curBal = (uSnap.data().balance || 0);
+      if(curBal < amount) return alert('Not enough balance');
+      // create withdraw record and deduct
+      await addDoc(collection(db,'withdraws'), { uid, email: uSnap.data().email, amount, address:addr, status:'pending', createdAt: serverTimestamp() });
+      await updateDoc(uRef, { balance: curBal - amount });
+      document.getElementById('w_status').innerText = '✅ Withdraw request sent (pending).';
+      // notify admin via Telegram (client side) - use server for production
+      try{
+        const BOT_TOKEN = '7776385916:AAHNDwHIehk0FJ1zzdoNV8lNB5qE_6DbPks';
+        const CHAT_ID = '5419054691';
+        const text = `📥 Withdraw Request\nUser: ${uSnap.data().username || uSnap.data().email}\nAmount: $${amount}\nAddress: ${addr}\nStatus: pending`;
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: CHAT_ID, text }) });
+      }catch(e){ console.warn('TG notify failed', e); }
+    });
   </script>
 </body>
 </html>
