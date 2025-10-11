@@ -1,30 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tasks - Ads Click Pay</title>
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="js/main.js"></script>
 </head>
-<body class="page-tasks">
-  <div class="topbar"><a class="back" href="dashboard.html">←</a><div class="brand">Tasks</div></div>
+<body>
+  <div class="topbar container">
+    <div class="brand">
+      <div class="logo">📝</div>
+      <div class="title">Tasks</div>
+    </div>
+  </div>
+
   <main class="container">
-    <section id="tasksList" class="card">
-      <h2>Available Tasks</h2>
-      <div id="tasksContainer"></div>
-    </section>
+    <div id="tasksList"></div>
   </main>
-  <footer class="bottom-nav">
-    <a href="index.html">Home</a>
-    <a href="earn.html">Earn</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="referral.html">Referral</a>
-    <a href="profile.html">Profile</a>
-    <a href="admin.html">Admin</a>
-  </footer>
+
+  <script src="js/main.js"></script>
   <script>
-    // click handlers for join/claim are in main.js
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const wrap = document.getElementById('tasksList'); wrap.innerHTML='';
+      APP.DBDATA.tasks.forEach((t,i)=>{
+        const el = document.createElement('div'); el.className='card small';
+        el.innerHTML = `<h4>${t.title}</h4><p>Reward: ${t.amount}</p><div><button class="btn" onclick="joinTask('${t.id}')">Join</button> <button class="btn hidden" id="claim-${t.id}" onclick="claimTask('${t.id}')">Claim</button></div>`;
+        wrap.appendChild(el);
+      });
+    });
+
+    function joinTask(id){
+      const t = APP.DBDATA.tasks.find(x=>x.id===id); if(!t) return;
+      const w = window.open(t.url,'_blank'); if(!w) return alert('Popup blocked');
+      let s=5;
+      const btn = event.target;
+      btn.innerText = 'Wait ' + s + 's...';
+      const iv = setInterval(()=>{ s--; btn.innerText='Wait ' + s + 's...'; if(s<=0){ clearInterval(iv); btn.classList.add('hidden'); document.getElementById('claim-'+id).classList.remove('hidden'); } },1000);
+    }
+
+    function claimTask(id){
+      const user = currentUser(); if(!user) return alert('Login required');
+      const t = APP.DBDATA.tasks.find(x=>x.id===id); if(!t) return;
+      APP.DBDATA.users[user.email].balance = Number(APP.DBDATA.users[user.email].balance || 0) + Number(t.amount);
+      APP.DBDATA.users[user.email].tasksCompleted = (APP.DBDATA.users[user.email].tasksCompleted||0) + 1;
+      APP.DBDATA.tasks = APP.DBDATA.tasks.filter(x=>x.id!==id);
+      APP.saveDB(APP.DBDATA); alert('Reward added ' + APP.money(t.amount));
+      window.location.reload();
+    }
   </script>
 </body>
 </html>
