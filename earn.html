@@ -1,48 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Earn — Ads Click Pay</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎥 Earn Ads - AdsClickPay</title>
   <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-  <script src="js/earn.js" defer></script>
 </head>
-<body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand"><div class="logo">🎯</div><h1>Earn</h1></div>
-      <div class="nav"><a href="dashboard.html">Dashboard</a><a href="tasks.html">Tasks</a></div>
-    </div>
+<body class="dark">
 
-    <main>
-      <section class="card">
-        <h3>Watch Ads</h3>
-        <p class="lead">Tap ▶ to open the embedded ad. Wait 5s, then claim reward.</p>
-        <button id="watchBtn" class="btn btn-primary">▶ Watch Ad</button>
-      </section>
+  <div class="earn-container">
+    <h2>🎯 Watch Ads & Earn TON</h2>
 
-      <section class="card">
-        <h3>Captcha + Ad</h3>
-        <p class="lead">Type the word <strong>human</strong> then submit to open ad and earn more.</p>
-        <form id="captchaForm">
-          <input id="captchaInput" class="input" placeholder="Type 'human'"/>
-          <button id="captchaBtn" class="btn btn-primary" type="submit">Submit + Open</button>
-        </form>
-      </section>
-    </main>
-
-    <!-- ad modal -->
-    <div id="adModal" class="modal">
-      <div class="modal-card">
-        <div id="adFrame"></div>
-        <div class="countdown" id="adCountdown">5</div>
-        <div style="margin-top:12px">
-          <button id="claimReward" class="btn btn-primary" disabled>Claim Reward</button>
-          <button id="closeAd" class="btn btn-ghost">Close</button>
-        </div>
+    <form id="earnForm" class="earn-box">
+      <p>🧩 Please type the CAPTCHA to continue</p>
+      <div class="captcha-box">
+        <span id="captchaValue"></span>
+        <button type="button" id="reloadCaptcha">🔄</button>
       </div>
-    </div>
+      <input id="captchaInput" type="text" placeholder="Type CAPTCHA here..." required />
+      <button type="submit" id="watchBtn">🎥 Watch Ad</button>
+    </form>
+
+    <p class="hint">💡 Each successful watch earns 0.5 TON</p>
   </div>
+
+  <script src="js/earn.js"></script>
 </body>
 </html>
