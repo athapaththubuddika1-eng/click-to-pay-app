@@ -1,1 +1,88 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Ads Click Pay</title><link rel='stylesheet' href='css/style.css'></head><body><div style='padding:20px'><h1>Ads Click Pay</h1><a href='register.html'>Register</a> | <a href='login.html'>Login</a> | <a href='admin.html'>Admin</a></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ads Click Pay</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="assets/logo-48.png" alt="logo" class="logo">
+        <h1>Ads Click Pay</h1>
+      </div>
+      <nav class="navlinks">
+        <a href="/index.html">Home</a>
+        <a href="/register.html">Register</a>
+        <a href="/login.html">Login</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero card">
+        <h2>Welcome to Ads Click Pay</h2>
+        <p>Join our Telegram channel, watch ads and earn micro payments (Demo uses localStorage only).</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="/register.html">Get Started</a>
+          <a class="btn outline" href="/login.html">Login</a>
+        </div>
+      </section>
+
+      <section class="summary card" id="summary">
+        <h3>Platform Summary</h3>
+        <div class="grid">
+          <div class="stat">
+            <div class="label">Total Members</div>
+            <div class="value" id="sum-members">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Total Withdraws</div>
+            <div class="value" id="sum-withdraws">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Total Withdraw Amount</div>
+            <div class="value" id="sum-withdraw-amount">$0.00</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="quick card">
+        <h4>Quick Info</h4>
+        <ul>
+          <li>Minimum Withdraw: <strong>$0.10</strong></li>
+          <li>Watch Ads Reward: <strong>$0.0002</strong></li>
+          <li>Captcha + Ads Reward: <strong>$0.0002</strong></li>
+          <li>Referral Bonus: <strong>$0.005 (both sides)</strong></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="bottom-nav">
+      <a href="/index.html">Home</a>
+      <a href="/earn.html">Earn</a>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/referral.html">Referral</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/admin.html">Admin</a>
+    </footer>
+  </div>
+
+  <!-- shared loading modal -->
+  <div id="loadingModal" class="loading-modal hidden">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Ads Click Pay...</div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // update summary on index load
+    document.addEventListener('DOMContentLoaded', () => {
+      main_init();
+      updateSummary();
+    });
+  </script>
+</body>
+</html>
