@@ -1,27 +1,33 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Profile — Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="js/main.js" defer></script>
-  <script src="js/auth.js" defer></script>
-</head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
-  <div class="container">
-    <div class="topbar"><div class="brand"><div class="logo">👤</div><h1>Profile</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
-    <main>
-      <section class="card small">
-        <form id="profileForm">
-          <label>Username <input class="input" name="username" required /></label>
-          <label>Email <input class="input" name="email" required readonly /></label>
-          <label>TON Address <input class="input" name="address" /></label>
-          <button class="btn btn-primary" type="submit">Save</button>
-          <div style="margin-top:12px"><button type="button" class="btn btn-ghost" onclick="logout()">Logout</button></div>
-        </form>
-      </section>
-    </main>
-  </div>
+  <div class="app"><div class="container">
+    <div class="header"><div class="logo">Profile</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
+    <div class="card">
+      <input id="p_username" class="input" placeholder="Username" />
+      <input id="p_email" class="input" placeholder="Email" readonly />
+      <input id="p_ton" class="input" placeholder="TON Address (save for withdraw)" />
+      <button id="saveProfile" class="button btn-primary">Save</button>
+      <p id="p_status" class="small"></p>
+    </div>
+  </div></div>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+    async function init(){
+      const uid = localStorage.getItem('uid'); if(!uid) { location.href='login.html'; return; }
+      const udoc = await getDoc(doc(db,'users',uid));
+      const data = udoc.data();
+      document.getElementById('p_username').value = data.username || '';
+      document.getElementById('p_email').value = data.email || '';
+      document.getElementById('p_ton').value = data.tonAddress || '';
+      document.getElementById('saveProfile').addEventListener('click', async ()=>{
+        await updateDoc(doc(db,'users',uid), { username: document.getElementById('p_username').value.trim(), tonAddress: document.getElementById('p_ton').value.trim() });
+        document.getElementById('p_status').innerText = 'Saved.';
+      });
+    }
+    init();
+  </script>
 </body>
 </html>
