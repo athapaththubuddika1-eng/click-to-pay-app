@@ -1,19 +1,43 @@
-// js/referral.js
-import { db, ref, get, onValue } from './firebase.js';
-import { requireAuth, safeEmail } from './main.js';
+import { db, ref, get, update, onValue } from "./firebase.js";
 
-export async function initReferral() {
-  const email = requireAuth();
-  const safe = safeEmail(email);
-  const uSnap = await get(ref(db, `users/${safe}`));
-  const code = uSnap.exists() ? uSnap.val().referralCode : safe.slice(0,6).toUpperCase();
-  const link = `${location.origin}/register.html?ref=${code}`;
-  document.getElementById('refLink').value = link;
-  document.getElementById('copyRef').addEventListener('click', ()=>{
-    navigator.clipboard.writeText(link);
-    alert('Referral link copied');
-  });
-  onValue(ref(db, `users/${safe}/referrals`), s => {
-    document.getElementById('copyRef').innerText = 'Copy Link';
-  });
-}
+const BOT_USERNAME = "adsclickpaybot";
+const REWARD_PER_REFERRAL = 0.0005;
+
+const currentEmail = localStorage.getItem("currentUser");
+const userRef = ref(db, "users/" + currentEmail.replace(/\./g, "_"));
+
+get(userRef).then(snapshot => {
+  if (snapshot.exists()) {
+    const user = snapshot.val();
+    const referralLink = `https://t.me/${BOT_USERNAME}?start=${user.refCode}`;
+    document.getElementById("referralLink").value = referralLink;
+
+    // Realtime referrals listener
+    onValue(ref(db, "users"), allSnap => {
+      let count = 0;
+      allSnap.forEach(child => {
+        if (child.val().referredBy === user.refCode) count++;
+      });
+
+      const earnings = (count * REWARD_PER_REFERRAL).toFixed(5);
+
+      document.getElementById("refCount").innerText = count;
+      document.getElementById("refEarnings").innerText = earnings;
+
+      update(userRef, { balance: parseFloat(user.balance) + parseFloat(earnings) });
+    });
+  }
+});
+
+// Copy button
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const input = document.getElementById("referralLink");
+  input.select();
+  navigator.clipboard.writeText(input.value);
+  alert("📋 Copied to clipboard!");
+});
+
+// Back
+document.getElementById("homeBtn").addEventListener("click", () => {
+  window.location.href = "dashboard.html";
+});
