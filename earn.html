@@ -3,48 +3,220 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earn 💰 | AdsClickPay</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Earn 💰 | Ads Click Pay</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .back-btn {
+      align-self: flex-start;
+      margin-bottom: 20px;
+      background: #1e40af;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .back-btn:hover {
+      background: #2563eb;
+      transform: scale(1.03);
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 25px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+    }
+
+    #captchaValue {
+      background: #1e293b;
+      padding: 10px 20px;
+      font-size: 1.3rem;
+      border-radius: 10px;
+      letter-spacing: 2px;
+      font-weight: bold;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      background: #334155;
+      color: white;
+    }
+
+    button.action-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    #submitCaptcha {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+    }
+
+    #submitCaptcha:hover {
+      background: linear-gradient(90deg, #15803d, #16a34a);
+      transform: scale(1.04);
+    }
+
+    #watchOnly {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+    }
+
+    #watchOnly:hover {
+      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      transform: scale(1.04);
+    }
+
+    #reloadCaptcha {
+      margin-left: 10px;
+      background: transparent;
+      color: #38bdf8;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #reloadCaptcha:hover {
+      transform: rotate(120deg);
+    }
+
+    #status {
+      margin-top: 15px;
+      color: #facc15;
+      font-size: 0.95rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-<body class="bg-dark text-light flex flex-col items-center justify-center min-h-screen">
-  
-  <!-- 🔹 Back to Dashboard -->
-  <div class="w-full text-center mt-4">
-    <button id="backDashboard" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold shadow-md hover:scale-105 transition">
-      ⬅ Back to Dashboard
-    </button>
-  </div>
+<body>
 
-  <!-- 🔹 Earn Section -->
-  <div class="mt-6 text-center p-4 bg-gray-800 rounded-2xl shadow-lg w-11/12 max-w-sm">
-    <h2 class="text-xl font-bold mb-3">🎯 Earn Rewards</h2>
-    <p class="text-gray-300 text-sm mb-3">Complete captcha & watch ad to earn instant rewards!</p>
+  <!-- 🔹 Back Button -->
+  <button class="back-btn" id="backDashboard">⬅ Back to Dashboard</button>
 
-    <div class="bg-gray-900 p-3 rounded-lg mb-3">
-      <div class="flex justify-between items-center">
-        <span class="font-mono text-lg" id="captchaValue">A7X9Q</span>
-        <button id="reloadCaptcha" class="text-blue-400 text-sm">🔄 Reload</button>
-      </div>
-      <input id="captchaInput" type="text" placeholder="Enter captcha" class="mt-2 w-full p-2 rounded bg-gray-700 text-center text-white outline-none" />
+  <!-- 🔹 Main Earn Box -->
+  <div class="container">
+    <h2>🎯 Earn Rewards</h2>
+    <p>Complete captcha & watch ad to earn instant rewards!</p>
+
+    <div>
+      <span id="captchaValue">9WRSR</span>
+      <button id="reloadCaptcha" title="Reload captcha">🔄</button>
     </div>
 
-    <button id="submitCaptcha" class="w-full bg-green-600 py-2 rounded-lg mt-2 font-bold hover:bg-green-700 transition">
-      ▶ Submit & Open Ad
-    </button>
+    <input id="captchaInput" type="text" placeholder="Enter captcha">
 
-    <button id="watchOnly" class="w-full bg-blue-600 py-2 rounded-lg mt-3 font-bold hover:bg-blue-700 transition">
-      ▶ Watch Ad (No Captcha)
-    </button>
+    <button id="submitCaptcha" class="action-btn">▶ Submit & Open Ad</button>
+    <button id="watchOnly" class="action-btn">▶ Watch Ad (No Captcha)</button>
 
-    <p id="status" class="mt-4 text-yellow-300 text-sm">⏳ Waiting for captcha...</p>
+    <p id="status">⏳ Waiting for captcha...</p>
   </div>
 
-  <script src="js/earn.js"></script>
   <script>
-    // Back to dashboard button
-    document.getElementById("backDashboard").addEventListener("click", () => {
+    const adsLink = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
+
+    // Captcha generation
+    const captchaValue = document.getElementById("captchaValue");
+    const reloadBtn = document.getElementById("reloadCaptcha");
+    const input = document.getElementById("captchaInput");
+    const submit = document.getElementById("submitCaptcha");
+    const watch = document.getElementById("watchOnly");
+    const status = document.getElementById("status");
+
+    function genCaptcha() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let cap = "";
+      for (let i = 0; i < 5; i++) cap += chars[Math.floor(Math.random() * chars.length)];
+      captchaValue.textContent = cap;
+    }
+    reloadBtn.onclick = genCaptcha;
+    genCaptcha();
+
+    submit.onclick = () => {
+      if (input.value.trim().toUpperCase() === captchaValue.textContent) {
+        status.textContent = "✅ Verified! Opening ad...";
+        setTimeout(() => {
+          window.open(adsLink, "_blank");
+          status.textContent = "🎉 Ad opened! Wait 5s to earn $0.0002";
+        }, 800);
+      } else {
+        status.textContent = "❌ Wrong captcha, try again!";
+      }
+    };
+
+    watch.onclick = () => {
+      status.textContent = "🔁 Opening ad...";
+      setTimeout(() => {
+        window.open(adsLink, "_blank");
+        status.textContent = "🎬 Ad opened! Wait 5s to earn $0.00015";
+      }, 600);
+    };
+
+    document.getElementById("backDashboard").onclick = () => {
       window.location.href = "dashboard.html";
-    });
+    };
   </script>
+
 </body>
 </html>
