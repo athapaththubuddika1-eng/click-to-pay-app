@@ -1,1 +1,0 @@
-const app={dbKey:'ads_click_db_v1',loadDB(){const r=localStorage.getItem(this.dbKey);return r?JSON.parse(r):{users:[],tasks:[],withdraws:[]}},saveDB(db){localStorage.setItem(this.dbKey,JSON.stringify(db))},showLoading(show=true){const m=document.getElementById('globalModal');if(!m) return; m.style.display= show? 'flex':'none' }}; window.app=app;
