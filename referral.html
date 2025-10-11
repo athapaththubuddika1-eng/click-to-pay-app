@@ -1,15 +1,29 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport"content="width=device-width,initial-scale=1"/><title>Referral</title><link rel="stylesheet" href="css/style.css"><script src="js/referral.js" defer></script></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Referral — Ads Click Pay</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+  <script src="js/referral.js" defer></script>
+</head>
 <body>
   <div class="container">
-    <div class="topbar"><div class="brand"><div class="logo">🔗</div><h1>Referral</h1></div><div class="nav"><a href="dashboard.html">Dashboard</a></div></div>
+    <div class="topbar">
+      <div class="brand"><div class="logo">🔗</div><h1>Referral</h1></div>
+      <div class="nav"><a href="dashboard.html">Dashboard</a></div>
+    </div>
+
     <main>
       <section class="card small">
         <h3>Your Referral</h3>
-        <div id="code" class="ref-code">—</div>
-        <div style="margin-top:10px"><input id="refLink" class="input" readonly /><button id="copyRef" class="btn">Copy</button></div>
-        <p id="refInfo" class="muted"></p>
+        <div id="refCode" class="ref-code">—</div>
+        <div style="margin-top:10px" class="copy-wrapper">
+          <input id="refLink" class="input" readonly />
+          <button id="copyRef" class="btn">Copy</button>
+        </div>
+        <p id="refCount" class="lead" style="margin-top:8px">You have invited 0 people.</p>
       </section>
     </main>
   </div>
