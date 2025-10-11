@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login</title><link rel="stylesheet" href="css/style.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Login</title><link rel="stylesheet" href="css/style.css"></head>
 <body>
 <div class="app"><div class="container">
   <div class="header"><div class="logo">Login</div><div><a href="register.html" class="button btn-ghost">Register</a></div></div>
@@ -19,18 +19,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const email = document.getElementById('l_email').value.trim().toLowerCase();
   const password = document.getElementById('l_password').value.trim();
-  const usersSnap = await get(ref(db,'users'));
-  if(!usersSnap.exists()){ return alert('No users found'); }
-  const users = usersSnap.val();
-  for(const k in users){
-    if(users[k].email === email && users[k].password === password){
-      localStorage.setItem('uid', k);
-      alert('Login successful');
-      window.location.href = 'dashboard.html';
-      return;
-    }
-  }
-  alert('Invalid email or password');
+  const safeEmail = email.replaceAll('.','_');
+  const snap = await get(ref(db,'users/' + safeEmail));
+  if(!snap.exists()){ alert('Invalid email or password'); return; }
+  const u = snap.val();
+  if(u.password !== password){ alert('Invalid email or password'); return; }
+  if(u.banned){ alert('Your account is suspended'); return; }
+  localStorage.setItem('userEmail', email);
+  alert('Login successful');
+  window.location.href = 'dashboard.html';
 });
 </script>
 </body>
