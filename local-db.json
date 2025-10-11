@@ -1,17 +1,18 @@
 {
   "users": [
     {
-      "username": "hasanbuddika",
+      "username": "Hasan",
       "email": "hasanbuddika1@gmail.com",
       "password": "Aabbcc.123",
-      "balance": 0,
-      "referralCode": "ADMINREF",
-      "referrer": null,
+      "balance": 0.12,
+      "referralCode": "REFADMIN",
       "referrals": [],
-      "banned": false,
-      "address": ""
+      "banned": false
     }
   ],
-  "tasks": [],
-  "withdraws": []
+  "tasks": [
+    { "id": "T1","title":"Visit sponsor","url":"https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa","amount":0.0001 }
+  ],
+  "withdraws": [],
+  "settings": { "minWithdraw":0.1, "watchReward":0.0001, "captchaReward":0.0002, "referralBonus":0.005 }
 }
