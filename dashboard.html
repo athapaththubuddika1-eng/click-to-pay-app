@@ -22,31 +22,33 @@
       <div class="card">
         <h4 class="huge">My Stats</h4>
         <p class="small">Referrals: <span id="myReferrals">0</span></p>
-        <p class="small">Total Withdraws: <span id="myWithdraws">0</span></p>
+        <p class="small">Total Withdrawal Requests: <span id="myWithdraws">0</span></p>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { auth, db, getDoc, doc, onAuthStateChanged } from './js/firebase-init.js';
-    import { signOut } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
-    import { getDoc as getDoc2 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+    import { db, ref, get } from './js/firebase.js';
 
     async function loadProfile(){
       const uid = localStorage.getItem('uid');
       if(!uid){ location.href='login.html'; return; }
-      const udoc = await getDoc(doc(db,'users',uid));
-      if(!udoc.exists()) { alert('User not found'); return; }
-      const data = udoc.data();
+      const uSnap = await get(ref(db,`users/${uid}`));
+      if(!uSnap.exists()) { alert('User not found'); return; }
+      const data = uSnap.val();
       document.getElementById('username').innerText = data.username || data.email;
       document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
       document.getElementById('myReferrals').innerText = data.referrals || 0;
-      // count user's withdraws
-      const wl = await (await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).getDocs((await import('https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js')).collection(db,'withdraws'));
-      const myW = wl.docs.filter(d=>d.data().uid === uid);
-      document.getElementById('myWithdraws').innerText = myW.length;
+
+      // count withdraws
+      const wSnap = await get(ref(db,'withdraws'));
+      if(wSnap.exists()){
+        const ws = wSnap.val();
+        const my = Object.keys(ws).filter(k => ws[k].uid === uid);
+        document.getElementById('myWithdraws').innerText = my.length;
+      } else document.getElementById('myWithdraws').innerText = 0;
     }
-    document.getElementById('logoutBtn').addEventListener('click', async ()=>{ localStorage.removeItem('uid'); await signOut(auth); location.href='index.html'; });
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('uid'); location.href='index.html'; });
     loadProfile();
   </script>
 </body>
