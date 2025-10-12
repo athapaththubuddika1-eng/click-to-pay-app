@@ -1,30 +1,20 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referral</title><link rel="stylesheet" href="css/style.css"></head>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Referral</title>
+<link rel="stylesheet" href="css/style.css"/></head>
 <body>
-<div class="app"><div class="container">
-  <div class="header"><div class="logo">Referral</div><div><a href="dashboard.html" class="button btn-ghost">Back</a></div></div>
-  <div class="card center">
-    <p class="small">Your referral link</p>
-    <input id="refLink" class="input" readonly />
-    <button id="copyRef" class="button btn-primary">Copy Link</button>
-    <p class="small">Referral bonus: <strong>$0.005</strong> (both sides)</p>
+  <div class="container">
+    <div class="card">
+      <h2 class="title">Invite Friends</h2>
+      <input id="refInput" class="input" readonly/>
+      <div style="display:flex;gap:8px">
+        <button id="copyRef" class="btn btn-primary">📋 Copy</button>
+        <button id="openRef" class="btn btn-outline">Open Telegram</button>
+      </div>
+      <p class="small">Referrals: <span id="refCount">0</span></p>
+    </div>
   </div>
-</div></div>
 
-<script type="module">
-import { db, ref, get, onValue } from './js/firebase.js';
-(async function(){
-  const email = localStorage.getItem('userEmail'); if(!email) { location.href='login.html'; return; }
-  const safe = email.replaceAll('.','_');
-  const snap = await get(ref(db,`users/${safe}`));
-  const code = snap.exists() ? snap.val().referralCode : safe.slice(0,6).toUpperCase();
-  const link = `${location.origin}/register.html?ref=${code}`;
-  document.getElementById('refLink').value = link;
-  document.getElementById('copyRef').addEventListener('click', ()=>{ navigator.clipboard.writeText(link); alert('Copied'); });
-
-  onValue(ref(db,`users/${safe}/referrals`), s=>{ document.getElementById('copyRef').innerText = 'Copy Link'; });
-})();
-</script>
+  <script type="module" src="js/referral.js"></script>
 </body>
 </html>
