@@ -1,49 +1,39 @@
 // js/withdraw.js
-import { db, ref, get, push, set, update } from './firebase.js';
-import { requireAuth, safeEmail } from './main.js';
+import { db } from './firebase.js';
+import { collection, addDoc, onSnapshot, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-export function initWithdraw() {
-  const email = requireAuth();
-  const safe = safeEmail(email);
-  const min = 0.1;
+const uid = localStorage.getItem('uid');
+if(!uid) location.href='login.html';
 
-  const btn = document.getElementById('withdrawBtn');
-  btn.addEventListener('click', async ()=>{
-    const amount = parseFloat(document.getElementById('amount').value);
-    const wallet = document.getElementById('wallet').value.trim();
-    if (!amount || !wallet) return alert('Fill fields');
-    if (amount < min) return alert(`Minimum withdraw is $${min}`);
-    const uRef = ref(db, `users/${safe}`);
-    const uSnap = await get(uRef);
-    if (!uSnap.exists()) return alert('User not found');
-    const u = uSnap.val();
-    if (Number(u.balance || 0) < amount) return alert('Not enough balance');
+const wBtn = document.getElementById('w_btn');
+const wAmount = document.getElementById('w_amount');
+const wAddress = document.getElementById('w_address');
+const historyDiv = document.getElementById('withdrawHistory');
 
-    // subtract balance immediately
-    await update(uRef, { balance: Number(u.balance) - amount });
+wBtn.addEventListener('click', async ()=>{
+  const amt = parseFloat(wAmount.value);
+  const addr = wAddress.value.trim();
+  if(!amt || amt < 0.1) return alert('Minimum withdraw $0.10');
+  const uRef = doc(db,'users',uid);
+  const uSnap = await getDoc(uRef);
+  if(!uSnap.exists()) return alert('User not found');
+  if((uSnap.data().balance||0) < amt) return alert('Insufficient balance');
+  await updateDoc(uRef, { balance: (uSnap.data().balance||0) - amt });
+  const wRef = await addDoc(collection(db,'withdraws'), { uid, email: uSnap.data().email, amount: amt, address: addr, status: 'Pending', createdAt: new Date().toISOString() });
+  // notify admin via API
+  fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `🔔 Withdraw Request\nUser: ${uSnap.data().email}\nAmount: $${amt}\nAddress: ${addr}\nStatus: Pending` })});
+  alert('Withdraw requested');
+  wAmount.value=''; wAddress.value='';
+});
 
-    // push withdraw request under withdraws/{safe}/{pushId}
-    const wRef = ref(db, `withdraws/${safe}`);
-    const newReqRef = push(wRef);
-    await set(newReqRef, {
-      amount,
-      wallet,
-      status: 'Pending',
-      date: new Date().toLocaleString()
-    });
-
-    // send telegram notify (optional) via serverless API
-    try {
-      await fetch('/api/sendTelegram', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ text: `🟡 Withdraw Request\nUser: ${u.username || email}\nEmail: ${email}\nAmount: $${amount}\nWallet: ${wallet}\nStatus: pending` })
-      });
-    } catch(e) {
-      console.warn('Telegram notify failed', e);
-    }
-
-    alert('Withdraw request submitted');
-    window.location.href = 'withdraw_history.html';
+// show withdraws
+onSnapshot(collection(db,'withdraws'), snap=>{
+  historyDiv.innerHTML='';
+  snap.forEach(s=>{
+    const d = s.data();
+    if(d.uid !== uid) return;
+    const el = document.createElement('div'); el.className='card';
+    el.innerHTML = `<p>Amount: $${d.amount}</p><p>Status: ${d.status}</p><p>${d.createdAt}</p>`;
+    historyDiv.appendChild(el);
   });
-}
+});
