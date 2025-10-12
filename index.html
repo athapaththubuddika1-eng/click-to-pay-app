@@ -1,50 +1,58 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ads Click Pay</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ads Click Pay — Home</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-<div id="splash" class="splash"><div class="spinner"></div><div style="margin-top:12px;color:#fff">Loading...</div></div>
+<body class="app-root dark">
+  <div id="splash" class="splash">
+    <img src="https://i.imgur.com/4YbQJkF.png" class="splash-logo" alt="logo">
+    <div class="splash-bar"></div>
+  </div>
 
-<div class="app">
-  <div class="container">
-    <div class="header">
-      <div class="logo">Ads Click Pay</div>
-      <div><a href="login.html" class="button btn-ghost">Login</a></div>
+  <header class="topbar safe-top">
+    <div class="topbar-inner">
+      <img src="https://i.imgur.com/4YbQJkF.png" class="logo" alt="logo">
+      <nav class="topnav">
+        <a href="index.html" class="active">Home</a>
+        <a href="earn.html">Earn</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="referral.html">Referral</a>
+        <a href="withdraw.html">Withdraw</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="admin.html">Admin</a>
+      </nav>
     </div>
+  </header>
 
-    <div class="card center">
-      <h1 class="huge">💸 Ads Click Pay</h1>
-      <p class="small">Earn by watching ads & completing tasks. Referral bonuses & TON withdrawals supported.</p>
-      <div style="margin-top:12px">
-        <a href="register.html" class="button btn-primary">Get Started</a>
-        <a href="earn.html" class="button btn-ghost">Earn Now</a>
+  <main class="wrap main-content">
+    <div class="card big-hero center">
+      <div class="hero-left">
+        <h1 class="huge">Ads Click Pay — Earn with Ads</h1>
+        <p class="lead">Watch ads, complete tasks & invite friends. Instant micro payouts. Mobile-first design for Telegram mini-app.</p>
+        <div class="row gap">
+          <button class="btn btn-primary btn-xl" onclick="location.href='register.html'">Get Started</button>
+          <button class="btn btn-white btn-xl" onclick="location.href='login.html'">Login</button>
+        </div>
+      </div>
+      <div class="hero-right">
+        <img src="https://i.imgur.com/5b8X3zG.png" alt="app" class="hero-image">
       </div>
     </div>
 
     <div class="card">
-      <h3 class="huge">Platform Summary</h3>
-      <p class="small">Total Members: <span id="totalMembers">0</span></p>
-      <p class="small">Total Withdrawals: <span id="totalWithdrawals">0</span></p>
+      <h3 class="large-title">Platform Summary</h3>
+      <p class="lead" id="summaryText">Loading summary...</p>
     </div>
 
-    <div class="footer">© 2025 Ads Click Pay</div>
-  </div>
-</div>
+    <div class="card center">
+      <div class="lead">Quick Info</div>
+      <p>Min Withdraw: <b>$0.10</b> • Watch Ad Reward: <b>$0.00015</b> • Captcha Reward: <b>$0.00020</b> • Refer Bonus: <b>$0.005</b></p>
+    </div>
+  </main>
 
-<script type="module">
-import { db, ref, get } from './js/firebase.js';
-async function loadSummary(){
-  try{
-    const usersSnap = await get(ref(db,'users')); const withdrawsSnap = await get(ref(db,'withdraws'));
-    document.getElementById('totalMembers').innerText = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
-    document.getElementById('totalWithdrawals').innerText = withdrawsSnap.exists() ? Object.keys(withdrawsSnap.val()).reduce((c,k)=>c+Object.keys(withdrawsSnap.val()[k]).length,0) : 0;
-  }catch(e){ console.warn(e); }
-  setTimeout(()=>document.getElementById('splash').style.display='none',800);
-}
-loadSummary();
-</script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
