@@ -1,29 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Register | Ads Click Pay</title>
-<link rel="stylesheet" href="css/style.css" />
-</head>
-<body class="dark app-root">
-  <div class="safe-top"></div>
-  <main class="wrap main-content center">
-    <div class="card login-box">
-      <h2>Register</h2>
-      <input id="regUsername" class="input" placeholder="Username" />
-      <input id="regEmail" class="input" placeholder="Email" type="email"/>
-      <input id="regPassword" class="input" placeholder="Password" type="password"/>
-      <div style="display:flex;gap:8px;">
-        <input id="regReferral" class="input" placeholder="Referral code (optional)" />
-        <button class="btn btn-outline" id="pasteRef">Paste</button>
-      </div>
-      <button class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
-      <div class="center" style="margin-top:8px">
-        <a href="login.html">Already have account? Login</a>
-      </div>
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Register</title>
+<link rel="stylesheet" href="css/style.css"/></head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2 class="title">Create Account</h2>
+      <input id="r_username" placeholder="Username" class="input"/>
+      <input id="r_email" placeholder="Email" class="input" type="email"/>
+      <input id="r_pass" placeholder="Password" class="input" type="password"/>
+      <input id="r_ref" placeholder="Referral code (optional)" class="input"/>
+      <button id="btnRegister" class="btn btn-primary btn-block">Create Account</button>
+      <p class="small">Already have account? <a href="login.html">Login</a></p>
     </div>
-  </main>
+  </div>
 
   <script type="module" src="js/auth.js"></script>
 </body>
