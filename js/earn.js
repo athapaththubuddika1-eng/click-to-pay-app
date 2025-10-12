@@ -1,96 +1,58 @@
 // js/earn.js
-import { db, ref, get, update, push } from './firebase.js';
-import { requireAuth, safeEmail } from './main.js';
+import { db } from './firebase.js';
+import { doc, getDoc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-const ADS_LINK = 'https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa';
-const CAPTCHA_USD = 0.0002;
-const AD_USD = 0.00015;
+const AD_URL = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
+const WATCH_REWARD = 0.00015;
+const CAPTCHA_REWARD = 0.0002;
 
-function openAd(url) {
-  try {
-    if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function') {
-      window.Telegram.WebApp.openLink(url);
-      return;
-    }
-  } catch(e) {}
-  // fallback
-  window.open(url, '_blank');
+const uid = localStorage.getItem('uid');
+if(!uid) location.href='login.html';
+
+const captchaTextEl = document.getElementById('captchaText');
+const captchaInput = document.getElementById('captchaInput');
+const captchaBtn = document.getElementById('captchaBtn');
+const watchBtn = document.getElementById('watchAdBtn');
+const capStatus = document.getElementById('capStatus');
+const watchStatus = document.getElementById('watchStatus');
+const countdownEl = document.getElementById('countdownEl');
+const countTimer = document.getElementById('countTimer');
+
+function genCaptcha(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s='';
+  for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length));
+  captchaTextEl.innerText = s;
+}
+genCaptcha();
+
+async function credit(amount, type){
+  const uRef = doc(db,'users',uid);
+  const snap = await getDoc(uRef);
+  if(!snap.exists()) return;
+  const newBal = (snap.data().balance||0) + Number(amount);
+  await updateDoc(uRef, { balance: newBal });
+  await addDoc(collection(db,'activities'), { uid, type, amount, ts: new Date().toISOString() });
+  return newBal;
 }
 
-async function addBalance(safe, amount) {
-  const uRef = ref(db, `users/${safe}`);
-  const uSnap = await get(uRef);
-  const cur = Number(uSnap.val().balance || 0);
-  const newBal = cur + Number(amount);
-  await update(uRef, { balance: newBal });
-  // record activity
-  await push(ref(db, 'activities'), { uid: safe, type: 'earn', amount, ts: new Date().toISOString() });
-}
+captchaBtn?.addEventListener('click', ()=>{
+  const val = (captchaInput.value||'').trim().toUpperCase();
+  const real = (captchaTextEl.innerText||'').trim().toUpperCase();
+  if(!val) return alert('Type captcha');
+  if(val !== real){ alert('Wrong captcha'); genCaptcha(); captchaInput.value=''; return; }
+  window.open(AD_URL, '_blank');
+  capStatus.innerText = 'Ad opened — waiting 5s...';
+  let t=5; countdownEl.classList.remove('hidden'); countTimer.innerText = t;
+  const iv = setInterval(async ()=>{
+    t--; countTimer.innerText = t;
+    if(t<=0){ clearInterval(iv); countdownEl.classList.add('hidden'); credit(WATCH_REWARD + CAPTCHA_REWARD, 'captcha+ad').then(()=>{ capStatus.innerText = `+ $${(WATCH_REWARD+CAPTCHA_REWARD).toFixed(6)} added`; captchaInput.value=''; genCaptcha(); }).catch(e=>{ capStatus.innerText='Error'; console.error(e)}); }
+  },1000);
+});
 
-export function initEarn() {
-  const email = requireAuth();
-  const safe = safeEmail(email);
-
-  // captcha generation
-  const captchaEl = document.getElementById('captchaValue');
-  const reloadBtn = document.getElementById('reloadCaptcha');
-  const submitBtn = document.getElementById('submitCaptcha');
-  const watchBtn = document.getElementById('watchBtn');
-  const status = document.getElementById('status');
-  const input = document.getElementById('captchaInput');
-
-  function genCaptcha(){
-    const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let s='';
-    for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length));
-    if(captchaEl) captchaEl.innerText = s;
-  }
-  genCaptcha();
-  if(reloadBtn) reloadBtn.onclick = genCaptcha;
-
-  if(submitBtn) submitBtn.addEventListener('click', async ()=>{
-    const typed = (input.value || '').trim().toUpperCase();
-    const real = (captchaEl.innerText || '').trim().toUpperCase();
-    if(!typed) return alert('Type the captcha');
-    if(typed !== real) { alert('Wrong captcha'); genCaptcha(); return; }
-    openAd(ADS_LINK);
-    status.innerText = '⏳ Ad opened — counting 5s...';
-    submitBtn.disabled = true;
-    let t = 5;
-    const iv = setInterval(async ()=>{
-      t--; status.innerText = `⏳ Counting ${t}s...`;
-      if (t < 0) {
-        clearInterval(iv);
-        try {
-          await addBalance(safe, CAPTCHA_USD + AD_USD);
-          status.innerText = `✅ Earned $${(CAPTCHA_USD + AD_USD).toFixed(6)}!`;
-          input.value = '';
-          genCaptcha();
-        } catch(e) {
-          console.error(e);
-          alert('Error awarding reward');
-        } finally {
-          submitBtn.disabled = false;
-        }
-      }
-    }, 1000);
-  });
-
-  if(watchBtn) watchBtn.addEventListener('click', async ()=>{
-    openAd(ADS_LINK);
-    status.innerText = '⏳ Ad opened — counting 5s...';
-    watchBtn.disabled = true;
-    let t = 5;
-    const iv = setInterval(async ()=>{
-      t--; status.innerText = `⏳ Counting ${t}s...`;
-      if (t < 0) {
-        clearInterval(iv);
-        try {
-          await addBalance(safe, AD_USD);
-          status.innerText = `✅ Earned $${AD_USD.toFixed(6)}!`;
-        } catch(e) { console.error(e); alert('Error awarding'); }
-        watchBtn.disabled = false;
-      }
-    }, 1000);
-  });
-}
+watchBtn?.addEventListener('click', ()=>{
+  window.open(AD_URL,'_blank');
+  watchStatus.innerText = 'Ad opened — waiting 5s...';
+  let t=5; watchStatus.innerText = `Waiting ${t}s...`;
+  const iv = setInterval(()=>{ t--; watchStatus.innerText = `Waiting ${t}s...`; if(t<=0){ clearInterval(iv); credit(WATCH_REWARD, 'watch_ad').then(()=>{ watchStatus.innerText = `+ $${WATCH_REWARD.toFixed(6)} added`; }).catch(e=>{ watchStatus.innerText='Error'; }) } },1000);
+});
