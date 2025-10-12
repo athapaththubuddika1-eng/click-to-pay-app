@@ -1,26 +1,24 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Earn</title>
-<link rel="stylesheet" href="css/style.css"/></head>
-<body>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Earn</title>
+<link rel="stylesheet" href="css/style.css"/></head><body>
   <div class="container">
+    <div class="card header"><div class="title">Earn</div><div class="small">Ads $0.00015 • Captcha+Ad $0.0002</div></div>
+
     <div class="card">
-      <h2 class="title">🎬 Watch Ad</h2>
-      <p class="small">Open ad in Telegram browser, wait 5s — reward $0.00015</p>
-      <button id="watchAdBtn" class="btn btn-primary btn-block">▶ Watch Ad</button>
+      <h3 class="title">🎬 Watch Ad</h3>
+      <p class="small">Open ad in Telegram browser and wait 5s → earn $0.00015</p>
+      <button id="watchAdBtn" class="btn btn-primary btn-block btn-emoji">▶ Watch Ad</button>
       <div id="watchStatus" class="small"></div>
     </div>
 
     <div class="card">
-      <h2 class="title">🧩 Captcha + Ad</h2>
-      <div class="captcha" id="captchaText">AAAAA</div>
+      <h3 class="title">🧩 Captcha + Ad</h3>
+      <div class="captcha" id="captchaText">ABCDE</div>
       <input id="captchaInput" class="input" placeholder="Type captcha"/>
-      <button id="captchaBtn" class="btn btn-primary btn-block">Submit & Open Ad</button>
+      <button id="captchaBtn" class="btn btn-primary btn-block btn-emoji">✅ Submit & Open Ad</button>
       <div id="capStatus" class="small"></div>
-      <div id="countdownEl" class="countdown hidden">Waiting: <span id="countTimer">5</span>s</div>
+      <div id="capCountdown" class="countdown hidden">Waiting: <span id="capTimer">5</span>s</div>
     </div>
   </div>
-
   <script type="module" src="js/earn.js"></script>
-</body>
-</html>
+</body></html>
