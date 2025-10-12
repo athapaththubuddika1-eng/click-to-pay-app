@@ -1,59 +1,30 @@
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register</title><link rel="stylesheet" href="css/style.css"></head>
-<body>
-<div class="app"><div class="container">
-  <div class="header"><div class="logo">Register</div><div><a href="login.html" class="button btn-ghost">Login</a></div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Register | Ads Click Pay</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="dark app-root">
+  <div class="safe-top"></div>
+  <main class="wrap main-content center">
+    <div class="card login-box">
+      <h2>Register</h2>
+      <input id="regUsername" class="input" placeholder="Username" />
+      <input id="regEmail" class="input" placeholder="Email" type="email"/>
+      <input id="regPassword" class="input" placeholder="Password" type="password"/>
+      <div style="display:flex;gap:8px;">
+        <input id="regReferral" class="input" placeholder="Referral code (optional)" />
+        <button class="btn btn-outline" id="pasteRef">Paste</button>
+      </div>
+      <button class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
+      <div class="center" style="margin-top:8px">
+        <a href="login.html">Already have account? Login</a>
+      </div>
+    </div>
+  </main>
 
-  <form id="registerForm" class="card">
-    <input id="r_username" class="input" placeholder="Username" required />
-    <input id="r_email" class="input" placeholder="Email" type="email" required />
-    <input id="r_password" class="input" placeholder="Password" type="password" required />
-    <input id="r_referral" class="input" placeholder="Referral code (optional)" />
-    <button class="button btn-primary" type="submit">Create Account</button>
-  </form>
-  <div class="footer small">By registering you accept our terms.</div>
-</div></div>
-
-<script type="module">
-import { db, ref, push, set, get, update } from './js/firebase.js';
-
-async function handleReferralBonus(newKey, refCode){
-  if(!refCode) return;
-  const usersSnap = await get(ref(db,'users')); if(!usersSnap.exists()) return;
-  const users = usersSnap.val();
-  for(const k in users){
-    if(users[k].referralCode === refCode){
-      // owner bonus
-      const ownerRef = ref(db,`users/${k}`);
-      const ownerVal = users[k];
-      await update(ownerRef, { balance: Number(ownerVal.balance||0) + 0.005, referrals: Number(ownerVal.referrals||0) + 1 });
-      // new user bonus will be applied here
-      await update(ref(db,`users/${newKey}`), { balance: 0.005 });
-      break;
-    }
-  }
-}
-
-document.getElementById('registerForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const username = document.getElementById('r_username').value.trim();
-  const email = document.getElementById('r_email').value.trim().toLowerCase();
-  const password = document.getElementById('r_password').value.trim();
-  const refCode = document.getElementById('r_referral').value.trim();
-
-  const newRef = push(ref(db,'users'));
-  const key = newRef.key;
-  const myReferral = key.slice(0,6).toUpperCase();
-
-  await set(newRef, { username, email, password, balance:0, referrals:0, referralCode: myReferral, refBy: refCode||null, tonAddress:'', createdAt:new Date().toISOString() });
-
-  if(refCode){ await handleReferralBonus(key, refCode); }
-
-  localStorage.setItem('uid', key);
-  alert('Registered! Redirecting to dashboard...');
-  window.location.href = 'dashboard.html';
-});
-</script>
+  <script type="module" src="js/auth.js"></script>
 </body>
 </html>
