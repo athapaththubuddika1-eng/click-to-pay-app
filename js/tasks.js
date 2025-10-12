@@ -1,71 +1,54 @@
 // js/tasks.js
-import { db, ref, get, push, set, update } from './firebase.js';
-import { requireAuth, safeEmail } from './main.js';
+import { db } from './firebase.js';
+import { collection, onSnapshot, addDoc, doc, getDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-export async function loadTasksPage() {
-  const email = requireAuth();
-  const safe = safeEmail(email);
+const uid = localStorage.getItem('uid');
+if(!uid) location.href='login.html';
 
-  async function loadTasks(){
-    const tSnap = await get(ref(db,'tasks'));
-    const list = document.getElementById('tasksList');
-    list.innerHTML = '';
-    if(!tSnap.exists()){ list.innerHTML = '<li class="small-muted">No tasks</li>'; return; }
-    const tasks = tSnap.val();
-    Object.entries(tasks).forEach(([k,t])=>{
-      const li = document.createElement('li'); li.className='list-item';
-      li.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${t.title}</strong><div class="small-muted">${t.link}</div></div>
-          <div><button class="button btn-primary joinBtn" data-id="${k}" data-url="${t.link}" data-amt="${t.amount}">▶ Join</button></div>
-        </div>
-      `;
-      list.appendChild(li);
-    });
+const tasksUl = document.getElementById('tasksUl');
+const myTasks = document.getElementById('myTasks');
 
-    document.querySelectorAll('.joinBtn').forEach(btn => btn.addEventListener('click', async (e)=>{
-      const id = btn.dataset.id; const url = btn.dataset.url; const amt = Number(btn.dataset.amt || 0);
-      window.open(url, '_blank');
-      btn.disabled = true; btn.innerText = '⏳ Joined';
-      await push(ref(db, `tasks_inprogress/${safe}`), { taskId: id, url, amount: amt, ts: new Date().toISOString(), status: 'joined' });
-      setTimeout(()=>{ btn.innerText = '✅ Joined'; }, 800);
-      loadMyTasks(); // refresh
-    }));
-  }
-
-  async function loadMyTasks(){
-    const snap = await get(ref(db, `tasks_inprogress/${safe}`));
-    const list = document.getElementById('myTasks');
-    list.innerHTML = '';
-    if(!snap.exists()){ list.innerHTML = '<li class="small-muted">No tasks yet</li>'; return; }
-    const obj = snap.val();
-    for(const k in obj){
-      const it = obj[k];
-      const li = document.createElement('li'); li.className='list-item';
-      li.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${it.taskId}</strong><div class="small-muted">${it.url}</div></div>
-          <div><button data-key="${k}" class="button btn-primary claimBtn">Claim $${Number(it.amount||0)}</button></div>
-        </div>
-      `;
-      list.appendChild(li);
-    }
-    document.querySelectorAll('.claimBtn').forEach(b => b.addEventListener('click', async (ev)=>{
-      const key = ev.target.dataset.key;
-      const snap = await get(ref(db, `tasks_inprogress/${safe}/${key}`));
-      if(!snap.exists()) return alert('Task not found');
-      const it = snap.val();
-      const uRef = ref(db, `users/${safe}`);
-      const uSnap = await get(uRef);
-      const cur = Number(uSnap.val().balance || 0);
-      await update(uRef, { balance: cur + Number(it.amount || 0) });
-      await push(ref(db, `tasks_completed/${safe}`), { ...it, completedAt: new Date().toISOString() });
-      await set(ref(db, `tasks_inprogress/${safe}/${key}`), null);
-      alert('Claimed!');
-      loadTasks(); loadMyTasks();
-    }));
-  }
-
-  await loadTasks();
-  await loadMyTasks();
+function renderTaskItem(id,t){
+  const li = document.createElement('li');
+  li.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${t.title}</strong><div class="small">${t.amount} USD</div></div><div><button class="btn btn-primary joinBtn" data-id="${id}" data-link="${t.link}" data-amt="${t.amount}">▶ Join</button></div></div>`;
+  return li;
 }
+
+onSnapshot(collection(db,'tasks'), snap=>{
+  tasksUl.innerHTML='';
+  snap.forEach(d=> tasksUl.appendChild(renderTaskItem(d.id, d.data())) );
+  document.querySelectorAll('.joinBtn').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const link = btn.dataset.link; const amt = Number(btn.dataset.amt);
+      await addDoc(collection(db, `user_tasks_${uid}`), { title: btn.closest('li').querySelector('strong').innerText, link, amount: amt, joinedAt: new Date().toISOString() });
+      window.open(link,'_blank');
+      btn.disabled = true; btn.innerText='Joined';
+      loadMyTasks();
+    };
+  });
+});
+
+async function loadMyTasks(){
+  myTasks.innerHTML='';
+  const snaps = await getDocs(collection(db, `user_tasks_${uid}`));
+  snaps.forEach(d=>{
+    const it = d.data();
+    const li = document.createElement('li');
+    li.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${it.title}</strong><div class="small">${it.amount} USD</div></div><div><button class="btn btn-primary claimBtn" data-doc="${d.id}" data-amt="${it.amount}">Claim</button></div></div>`;
+    myTasks.appendChild(li);
+  });
+  document.querySelectorAll('.claimBtn').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const docId = btn.dataset.doc; const amt = Number(btn.dataset.amt);
+      // credit
+      const uRef = doc(db,'users',uid);
+      const uSnap = await getDoc(uRef);
+      await updateDoc(uRef, { balance: (uSnap.data().balance||0) + amt });
+      await deleteDoc(doc(db, `user_tasks_${uid}`, docId));
+      alert('Claimed!');
+      loadMyTasks();
+    };
+  });
+}
+import { getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+loadMyTasks();
