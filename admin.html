@@ -1,32 +1,22 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin</title>
-<link rel="stylesheet" href="css/style.css"/></head>
-<body>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin</title>
+<link rel="stylesheet" href="css/style.css"/></head><body>
   <div class="container">
     <div id="adminLoginBox" class="card">
       <h2 class="title">Admin Login</h2>
       <input id="admin_email" class="input" placeholder="Email"/>
       <input id="admin_pass" class="input" placeholder="Password" type="password"/>
-      <button id="admin_login" class="btn btn-primary btn-block">Login</button>
+      <button id="admin_login" class="btn btn-primary btn-block">🔐 Login</button>
     </div>
 
     <div id="adminPanel" class="card hidden">
       <h2 class="title">Admin Panel</h2>
-      <h3 class="small">Users</h3>
-      <div id="adminUsers" class="small"></div>
-
+      <h3 class="small">Users</h3><div id="adminUsers" class="small"></div>
       <h3 class="small">Add Task</h3>
-      <input id="task_title" class="input" placeholder="Title"/>
-      <input id="task_link" class="input" placeholder="Link"/>
-      <input id="task_amount" class="input" placeholder="Amount" type="number" step="0.01"/>
-      <button id="task_add" class="btn btn-primary">Add Task</button>
-
-      <h3 class="small">Withdraw Requests</h3>
-      <div id="adminWithdraws" class="small"></div>
+      <input id="task_title" class="input" placeholder="Title"/><input id="task_link" class="input" placeholder="Link"/><input id="task_amount" class="input" placeholder="Amount (USD)"/>
+      <button id="task_add" class="btn btn-primary">➕ Add Task</button>
+      <h3 class="small">Withdraw Requests</h3><div id="adminWithdraws" class="small"></div>
     </div>
   </div>
-
   <script type="module" src="js/admin.js"></script>
-</body>
-</html>
+</body></html>
