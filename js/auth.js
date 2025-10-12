@@ -1,28 +1,56 @@
-import { db, ref, set, get, child } from "./firebase.js";
+// js/auth.js
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { doc, setDoc, getDocs, collection, query, where, getDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-document.getElementById("registerBtn").addEventListener("click", async () => {
-  const username = document.getElementById("username").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+const registerBtn = document.getElementById('btnRegister');
+const loginBtn = document.getElementById('btnLogin');
 
-  // Referral code from Telegram link
-  const params = new URLSearchParams(window.location.search);
-  const referredBy = params.get("start") || null;
+function makeReferral(){
+  return Math.random().toString(36).substring(2,9).toUpperCase();
+}
 
-  const refCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-  const userRef = ref(db, "users/" + email.replace(/\./g, "_"));
-
-  await set(userRef, {
-    username,
-    email,
-    password,
-    balance: 0.0,
-    refCode,
-    referredBy
+if(registerBtn){
+  registerBtn.addEventListener('click', async ()=>{
+    const username = document.getElementById('r_username').value.trim();
+    const email = document.getElementById('r_email').value.trim().toLowerCase();
+    const pass = document.getElementById('r_pass').value;
+    const referredBy = document.getElementById('r_ref').value.trim() || null;
+    if(!username||!email||!pass) return alert('Fill all fields');
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const uid = cred.user.uid;
+      const referralCode = makeReferral();
+      await setDoc(doc(db,'users',uid), { uid, username, email, balance:0, referralCode, referredBy, banned:false, createdAt:new Date().toISOString() });
+      // if referredBy present, credit both
+      if(referredBy){
+        const q = query(collection(db,'users'), where('referralCode','==', referredBy));
+        const snaps = await getDocs(q);
+        snaps.forEach(async s=>{
+          const owner = s.data();
+          await setDoc(doc(db,'users',owner.uid), { ...owner, balance:(owner.balance||0)+0.005 }, { merge:true });
+          await setDoc(doc(db,'users',uid), { balance:0.005 }, { merge:true });
+        });
+      }
+      localStorage.setItem('uid', uid);
+      location.href='dashboard.html';
+    }catch(e){ console.error(e); alert(e.message || e); }
   });
+}
 
-  alert("✅ Account created!");
-  localStorage.setItem("currentUser", email);
-  window.location.href = "dashboard.html";
-});
+if(loginBtn){
+  loginBtn.addEventListener('click', async ()=>{
+    const email = document.getElementById('l_email').value.trim().toLowerCase();
+    const pass = document.getElementById('l_pass').value;
+    if(!email||!pass) return alert('Fill fields');
+    try{
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const uid = cred.user.uid;
+      // check banned
+      const userSnap = await getDoc(doc(db,'users',uid));
+      if(userSnap.exists() && userSnap.data().banned){ alert('Account is banned'); return; }
+      localStorage.setItem('uid', uid);
+      location.href='dashboard.html';
+    }catch(e){ alert('Invalid login'); }
+  });
+}
