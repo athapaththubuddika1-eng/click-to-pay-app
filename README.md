@@ -1,13 +1,23 @@
-# Ads Click Pay - Mini App (final)
+# Ads Click Pay — Mini App (final)
 
 ## Setup
-1. Create Firebase project, enable Realtime Database.
-2. Update `js/firebase.js` databaseURL if needed.
-3. Deploy to Vercel:
-   - Create project, push code to GitHub or upload.
-   - Set environment variables: `TG_BOT_TOKEN` and `TG_CHAT_ID`.
-4. Open `/register.html` to create user, `/admin.html` to login as admin.
+1. Create Firebase project — enable Authentication (Email/Password) and Firestore (native mode).
+2. In Firestore, allow test rules while developing:
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} { allow read, write: if true; }
+     }
+   }
+3. Paste files into GitHub repo.
+4. Deploy to Vercel (Import repo). In Vercel project settings, set Environment Variables:
+   - BOT_TOKEN = <your telegram bot token>
+   - CHAT_ID = <your chat id>
+5. Visit the site (mobile / Telegram mini-app) and test.
 
-## Admin demo credentials
+## Admin
 - Email: hasanbuddika1@gmail.com
 - Password: Aabbcc.123
+
+## Notes
+- Production: tighten Firestore rules, move admin actions to secure Cloud Functions, server-side verification for ad views.
