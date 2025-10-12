@@ -1,54 +1,44 @@
-// js/tasks.js
+// js/tasks.js - display tasks and claim
 import { db } from './firebase.js';
-import { collection, onSnapshot, addDoc, doc, getDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+import { ref, onValue, get, push, set } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
 const uid = localStorage.getItem('uid');
-if(!uid) location.href='login.html';
-
 const tasksUl = document.getElementById('tasksUl');
 const myTasks = document.getElementById('myTasks');
 
-function renderTaskItem(id,t){
-  const li = document.createElement('li');
-  li.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${t.title}</strong><div class="small">${t.amount} USD</div></div><div><button class="btn btn-primary joinBtn" data-id="${id}" data-link="${t.link}" data-amt="${t.amount}">▶ Join</button></div></div>`;
-  return li;
+function loadTasks(){
+  onValue(ref(db,'tasks'), snap=>{
+    tasksUl.innerHTML = '';
+    snap.forEach(child=>{ const v = child.val(); const li = document.createElement('li'); li.className='list'; li.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${v.title}</strong><div class="small">${v.amount} USD</div></div><div><button class="btn btn-primary" onclick="joinTask('${child.key}')">▶ Join</button></div></div>`; tasksUl.appendChild(li); });
+  });
 }
 
-onSnapshot(collection(db,'tasks'), snap=>{
-  tasksUl.innerHTML='';
-  snap.forEach(d=> tasksUl.appendChild(renderTaskItem(d.id, d.data())) );
-  document.querySelectorAll('.joinBtn').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const link = btn.dataset.link; const amt = Number(btn.dataset.amt);
-      await addDoc(collection(db, `user_tasks_${uid}`), { title: btn.closest('li').querySelector('strong').innerText, link, amount: amt, joinedAt: new Date().toISOString() });
-      window.open(link,'_blank');
-      btn.disabled = true; btn.innerText='Joined';
-      loadMyTasks();
-    };
-  });
-});
+window.joinTask = async (taskId)=>{
+  const tSnap = await get(ref(db, `tasks/${taskId}`));
+  if(!tSnap.exists()) return;
+  const task = tSnap.val();
+  // record join for user
+  const uTaskRef = push(ref(db, `userTasks/${uid}`));
+  await set(uTaskRef, { taskId, title: task.title, amount: task.amount, link: task.link, joinedAt: new Date().toISOString() });
+  window.open(task.link,'_blank');
+  loadMyTasks();
+};
 
 async function loadMyTasks(){
-  myTasks.innerHTML='';
-  const snaps = await getDocs(collection(db, `user_tasks_${uid}`));
-  snaps.forEach(d=>{
-    const it = d.data();
-    const li = document.createElement('li');
-    li.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${it.title}</strong><div class="small">${it.amount} USD</div></div><div><button class="btn btn-primary claimBtn" data-doc="${d.id}" data-amt="${it.amount}">Claim</button></div></div>`;
-    myTasks.appendChild(li);
-  });
-  document.querySelectorAll('.claimBtn').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const docId = btn.dataset.doc; const amt = Number(btn.dataset.amt);
-      // credit
-      const uRef = doc(db,'users',uid);
-      const uSnap = await getDoc(uRef);
-      await updateDoc(uRef, { balance: (uSnap.data().balance||0) + amt });
-      await deleteDoc(doc(db, `user_tasks_${uid}`, docId));
-      alert('Claimed!');
-      loadMyTasks();
-    };
-  });
+  myTasks.innerHTML = '';
+  const snap = await get(ref(db, `userTasks/${uid}`));
+  if(!snap.exists()) return;
+  snap.forEach(child=>{ const v = child.val(); const el = document.createElement('li'); el.className='list'; el.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${v.title}</strong><div class="small">${v.amount} USD</div></div><div><button class="btn btn-primary" onclick="claimTask('${child.key}', ${v.amount})">✅ Claim</button></div></div>`; myTasks.appendChild(el); });
 }
-import { getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-loadMyTasks();
+window.claimTask = async (key, amount)=>{
+  const uRef = ref(db, `users/${uid}`);
+  const s = await get(uRef);
+  if(!s.exists()) return;
+  await update(uRef, { balance: (Number(s.val().balance||0) + Number(amount)) });
+  // remove user task
+  await set(ref(db, `userTasks/${uid}/${key}`), null);
+  alert('Claimed');
+  loadMyTasks();
+};
+
+loadTasks(); loadMyTasks();
