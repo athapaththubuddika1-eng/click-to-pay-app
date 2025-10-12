@@ -1,50 +1,34 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="css/style.css"></head>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Dashboard</title>
+<link rel="stylesheet" href="css/style.css"/></head>
 <body>
-<div class="app"><div class="container">
-  <div class="header">
-    <div class="logo">Dashboard</div>
-    <div><button id="logoutBtn" class="button btn-ghost">Logout</button></div>
-  </div>
+  <div class="container">
+    <div class="card header">
+      <div>
+        <div id="welcomeName" class="title">Welcome</div>
+        <div id="balanceDisplay" class="small">Balance: $0.000000</div>
+      </div>
+      <div>
+        <button class="btn btn-outline" onclick="location.href='profile.html'">Profile</button>
+      </div>
+    </div>
 
-  <div class="card">
-    <h3 class="huge">Welcome, <span id="username">—</span></h3>
-    <p class="small">Balance: <strong id="userBalance">$0.000000</strong></p>
-    <div style="margin-top:12px">
-      <a href="earn.html" class="button btn-primary">Earn 🎯</a>
-      <a href="tasks.html" class="button btn-ghost">Tasks ✅</a>
-      <a href="withdraw.html" class="button btn-green">Withdraw 💸</a>
-      <a href="referral.html" class="button btn-ghost">Referral 🔗</a>
+    <div class="card">
+      <div style="display:flex;gap:8px;flex-direction:column">
+        <button class="btn btn-primary" onclick="location.href='earn.html'">Earn</button>
+        <button class="btn btn-outline" onclick="location.href='tasks.html'">Tasks</button>
+        <button class="btn btn-outline" onclick="location.href='referral.html'">Referral</button>
+        <button class="btn btn-outline" onclick="location.href='withdraw.html'">Withdraw</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="small">Activity</h3>
+      <div id="activityList" class="small">—</div>
     </div>
   </div>
 
-  <div class="card">
-    <h4 class="huge">My Stats</h4>
-    <p class="small">Referrals: <span id="myReferrals">0</span></p>
-    <p class="small">Pending Withdraws: <span id="myWithdraws">0</span></p>
-  </div>
-</div></div>
-
-<script type="module">
-import { db, ref, get, onValue } from './js/firebase.js';
-async function loadProfile(){
-  const email = localStorage.getItem('userEmail'); if(!email) { location.href='login.html'; return; }
-  const safe = email.replaceAll('.','_');
-  const uRef = ref(db,`users/${safe}`);
-  onValue(uRef, snapshot => {
-    if(snapshot.exists()){
-      const data = snapshot.val();
-      document.getElementById('username').innerText = data.username || data.email;
-      document.getElementById('userBalance').innerText = '$' + Number(data.balance || 0).toFixed(6);
-      document.getElementById('myReferrals').innerText = data.referrals || 0;
-    }
-  });
-  const wRef = ref(db,'withdraws/' + safe);
-  onValue(wRef, snap => { document.getElementById('myWithdraws').innerText = snap.exists() ? Object.keys(snap.val()).length : 0; });
-}
-document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('userEmail'); location.href='index.html'; });
-loadProfile();
-</script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
