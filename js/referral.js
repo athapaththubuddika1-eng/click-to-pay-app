@@ -1,43 +1,26 @@
-import { db, ref, get, update, onValue } from "./firebase.js";
+// js/referral.js
+import { db } from './firebase.js';
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-const BOT_USERNAME = "adsclickpaybot";
-const REWARD_PER_REFERRAL = 0.0005;
+const uid = localStorage.getItem('uid');
+if(!uid) location.href='login.html';
 
-const currentEmail = localStorage.getItem("currentUser");
-const userRef = ref(db, "users/" + currentEmail.replace(/\./g, "_"));
+const refInput = document.getElementById('refInput');
+const copyBtn = document.getElementById('copyRef');
+const openBtn = document.getElementById('openRef');
+const refCount = document.getElementById('refCount');
 
-get(userRef).then(snapshot => {
-  if (snapshot.exists()) {
-    const user = snapshot.val();
-    const referralLink = `https://t.me/${BOT_USERNAME}?start=${user.refCode}`;
-    document.getElementById("referralLink").value = referralLink;
-
-    // Realtime referrals listener
-    onValue(ref(db, "users"), allSnap => {
-      let count = 0;
-      allSnap.forEach(child => {
-        if (child.val().referredBy === user.refCode) count++;
-      });
-
-      const earnings = (count * REWARD_PER_REFERRAL).toFixed(5);
-
-      document.getElementById("refCount").innerText = count;
-      document.getElementById("refEarnings").innerText = earnings;
-
-      update(userRef, { balance: parseFloat(user.balance) + parseFloat(earnings) });
-    });
-  }
-});
-
-// Copy button
-document.getElementById("copyBtn").addEventListener("click", () => {
-  const input = document.getElementById("referralLink");
-  input.select();
-  navigator.clipboard.writeText(input.value);
-  alert("📋 Copied to clipboard!");
-});
-
-// Back
-document.getElementById("homeBtn").addEventListener("click", () => {
-  window.location.href = "dashboard.html";
-});
+async function init(){
+  const uRef = doc(db,'users',uid);
+  const snap = await getDoc(uRef);
+  if(!snap.exists()) return;
+  const code = snap.data().referralCode;
+  const link = `https://t.me/adsclickpaybot?start=${code}`;
+  if(refInput) refInput.value = link;
+  if(copyBtn) copyBtn.onclick = ()=>{ navigator.clipboard.writeText(link); alert('Copied'); };
+  if(openBtn) openBtn.onclick = ()=> window.open(link,'_blank');
+  const q = query(collection(db,'users'), where('referredBy','==', code));
+  const snaps = await getDocs(q);
+  if(refCount) refCount.innerText = snaps.size;
+}
+init();
