@@ -1,95 +1,91 @@
-// js/admin.js
+// js/admin.js - simple client-side admin actions (for demo). Use secure cloud functions in production.
 import { db } from './firebase.js';
-import { collection, onSnapshot, addDoc, setDoc, doc, getDoc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-const adminEmailInput = document.getElementById('admin_email');
-const adminPassInput = document.getElementById('admin_pass');
-const adminLoginBtn = document.getElementById('admin_login');
-const adminPanel = document.getElementById('adminPanel');
-const adminLoginBox = document.getElementById('adminLoginBox');
-const adminUsers = document.getElementById('adminUsers');
-const adminWithdraws = document.getElementById('adminWithdraws');
+import { ref, onValue, get, update, push, set } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
 const ADMIN_EMAIL = "hasanbuddika1@gmail.com";
 const ADMIN_PASS = "Aabbcc.123";
 
-adminLoginBtn?.addEventListener('click', async ()=>{
-  const em = adminEmailInput.value.trim();
-  const pw = adminPassInput.value.trim();
+const adminLoginBtn = document.getElementById('admin_login');
+const adminLoginBox = document.getElementById('adminLoginBox');
+const adminPanel = document.getElementById('adminPanel');
+const adminUsers = document.getElementById('adminUsers');
+const adminWithdraws = document.getElementById('adminWithdraws');
+const taskAddBtn = document.getElementById('task_add');
+
+adminLoginBtn.onclick = async ()=>{
+  const em = document.getElementById('admin_email').value.trim();
+  const pw = document.getElementById('admin_pass').value.trim();
   if(em === ADMIN_EMAIL && pw === ADMIN_PASS){
-    adminLoginBox.classList.add('hidden');
-    adminPanel.classList.remove('hidden');
+    adminLoginBox.classList.add('hidden'); adminPanel.classList.remove('hidden');
     loadUsers(); loadWithdraws();
   } else alert('Invalid admin credentials');
-});
+};
 
 function loadUsers(){
-  onSnapshot(collection(db,'users'), snap=>{
-    adminUsers.innerHTML='';
-    snap.forEach(d=>{
-      const u = d.data();
-      const id = d.id;
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `<p><strong>${u.username||'—'}</strong> • ${u.email}</p>
-        <p>Balance: $${(u.balance||0).toFixed(6)} • Referrals: ${u.refCount||0} • ${u.banned?'<span style="color:#ff6b6b">BANNED</span>':'Active'}</p>
-        <div style="display:flex;gap:8px">
-          <input id="addAmt_${id}" placeholder="$ amt" class="input" style="width:120px"/>
-          <button class="btn" onclick="window.adminAddBalance('${id}')">Add Balance</button>
-          <button class="btn" onclick="window.adminToggleBan('${id}')">${u.banned?'Unban':'Ban'}</button>
-        </div>`;
+  onValue(ref(db,'users'), snap=>{
+    adminUsers.innerHTML = '';
+    snap.forEach(child=>{ const id = child.key; const v = child.val();
+      const el = document.createElement('div'); el.className='card';
+      el.innerHTML = `<p><strong>${v.username||'—'}</strong> • ${v.email}</p><p>Balance: $${(v.balance||0).toFixed(6)} • RefBy: ${v.referredBy||'—'}</p><div style="display:flex;gap:8px"><input id="amt_${id}" class="input" placeholder="$ amt" style="width:130px"/><button class="btn" onclick="adminAddBalance('${id}')">Add</button><button class="btn" onclick="adminToggleBan('${id}')">${v.banned?'Unban':'Ban'}</button></div>`;
       adminUsers.appendChild(el);
     });
   });
 }
 
-window.adminAddBalance = async (uid) => {
-  const amtInput = document.getElementById(`addAmt_${uid}`);
-  const amt = parseFloat(amtInput.value);
+window.adminAddBalance = async (uid)=>{
+  const el = document.getElementById(`amt_${uid}`);
+  const amt = parseFloat(el.value);
   if(!amt) return alert('Enter amount');
-  const uRef = doc(db,'users',uid);
-  const s = await getDoc(uRef);
+  const s = await get(ref(db, `users/${uid}`));
   if(!s.exists()) return alert('User not found');
-  await updateDoc(uRef, { balance: (s.data().balance||0) + amt });
+  await update(ref(db, `users/${uid}`), { balance: (Number(s.val().balance||0) + amt) });
   alert('Balance added');
-  amtInput.value='';
+  el.value='';
 };
 
-window.adminToggleBan = async (uid) => {
-  const uRef = doc(db,'users',uid);
-  const s = await getDoc(uRef);
+window.adminToggleBan = async (uid)=>{
+  const s = await get(ref(db, `users/${uid}`));
   if(!s.exists()) return alert('User not found');
-  await updateDoc(uRef, { banned: !s.data().banned });
-  alert(s.data().banned ? 'Unbanned' : 'Banned');
+  await update(ref(db, `users/${uid}`), { banned: !s.val().banned });
+  alert('Updated');
 };
 
 function loadWithdraws(){
-  onSnapshot(collection(db,'withdraws'), snap=>{
-    adminWithdraws.innerHTML='';
-    snap.forEach(d=>{
-      const w = d.data(); const id = d.id;
+  onValue(ref(db,'withdraws'), snap=>{
+    adminWithdraws.innerHTML = '';
+    snap.forEach(child=>{ const id = child.key; const w = child.val();
       const el = document.createElement('div'); el.className='card';
-      el.innerHTML = `<p><strong>${w.email}</strong> • $${w.amount} • ${w.status}</p>
-        <div style="display:flex;gap:8px">
-          <button class="btn" onclick="window.approveWithdraw('${id}')">Approve</button>
-          <button class="btn" onclick="window.rejectWithdraw('${id}')">Reject</button>
-        </div>`;
+      el.innerHTML = `<p><strong>${w.email}</strong> • $${w.amount} • ${w.status}</p><div style="display:flex;gap:8px"><button class="btn" onclick="approve('${id}')">Approve</button><button class="btn" onclick="reject('${id}')">Reject</button></div>`;
       adminWithdraws.appendChild(el);
     });
   });
 }
 
-window.approveWithdraw = async (id) => {
-  await updateDoc(doc(db,'withdraws',id), { status:'Approved', processedAt: new Date().toISOString() });
-  const w = (await getDoc(doc(db,'withdraws',id))).data();
-  // notify via API
+window.approve = async (id)=>{
+  const s = await get(ref(db, `withdraws/${id}`));
+  if(!s.exists()) return;
+  await update(ref(db, `withdraws/${id}`), { status:'Approved', processedAt: new Date().toISOString() });
+  const w = s.val();
+  // notify admin/user via telegram
   fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `✅ Withdraw Approved\nUser: ${w.email}\nAmount: $${w.amount}\nAddress: ${w.address}` })});
   alert('Approved & notified');
 };
 
-window.rejectWithdraw = async (id) => {
-  await updateDoc(doc(db,'withdraws',id), { status:'Rejected', processedAt: new Date().toISOString() });
-  const w = (await getDoc(doc(db,'withdraws',id))).data();
+window.reject = async (id)=>{
+  const s = await get(ref(db, `withdraws/${id}`));
+  if(!s.exists()) return;
+  await update(ref(db, `withdraws/${id}`), { status:'Rejected', processedAt: new Date().toISOString() });
+  const w = s.val();
   fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `❌ Withdraw Rejected\nUser: ${w.email}\nAmount: $${w.amount}\nAddress: ${w.address}` })});
   alert('Rejected & notified');
 };
+
+taskAddBtn?.addEventListener('click', async ()=>{
+  const t = document.getElementById('task_title').value.trim();
+  const link = document.getElementById('task_link').value.trim();
+  const amount = parseFloat(document.getElementById('task_amount').value);
+  if(!t||!link||!amount) return alert('Fill task fields');
+  const p = push(ref(db,'tasks'));
+  await set(p, { title:t, link, amount });
+  alert('Task added');
+});
