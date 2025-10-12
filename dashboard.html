@@ -1,34 +1,32 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Dashboard</title>
-<link rel="stylesheet" href="css/style.css"/></head>
-<body>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Dashboard</title>
+<link rel="stylesheet" href="css/style.css"/></head><body>
   <div class="container">
     <div class="card header">
       <div>
         <div id="welcomeName" class="title">Welcome</div>
-        <div id="balanceDisplay" class="small">Balance: $0.000000</div>
+        <div id="userEmail" class="small">—</div>
       </div>
       <div>
-        <button class="btn btn-outline" onclick="location.href='profile.html'">Profile</button>
+        <button id="adminOpenBtn" class="btn btn-ghost" onclick="location.href='admin.html'">⚙ Admin</button>
       </div>
     </div>
 
     <div class="card">
       <div style="display:flex;gap:8px;flex-direction:column">
-        <button class="btn btn-primary" onclick="location.href='earn.html'">Earn</button>
-        <button class="btn btn-outline" onclick="location.href='tasks.html'">Tasks</button>
-        <button class="btn btn-outline" onclick="location.href='referral.html'">Referral</button>
-        <button class="btn btn-outline" onclick="location.href='withdraw.html'">Withdraw</button>
+        <button class="btn btn-primary" onclick="location.href='earn.html'">🎬 Earn</button>
+        <button class="btn btn-ghost" onclick="location.href='tasks.html'">🧾 Tasks</button>
+        <button class="btn btn-ghost" onclick="location.href='referral.html'">🔗 Referral</button>
+        <button class="btn btn-ghost" onclick="location.href='withdraw.html'">🏧 Withdraw</button>
+        <button class="btn btn-ghost" onclick="location.href='profile.html'">👤 Profile</button>
       </div>
     </div>
 
     <div class="card">
-      <h3 class="small">Activity</h3>
-      <div id="activityList" class="small">—</div>
+      <h3 class="small">Account</h3>
+      <p class="small">Balance: $<span id="balanceVal">0.000000</span></p>
+      <p class="small">Total Withdraws: <span id="totalWithdraws">0</span></p>
     </div>
   </div>
-
   <script type="module" src="js/main.js"></script>
-</body>
-</html>
+</body></html>
