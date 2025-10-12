@@ -1,58 +1,70 @@
-// js/earn.js
+// js/earn.js - Captcha + Ad and Watch Ad flows (USD rewards)
 import { db } from './firebase.js';
-import { doc, getDoc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-const AD_URL = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
-const WATCH_REWARD = 0.00015;
-const CAPTCHA_REWARD = 0.0002;
+import { ref, get, update, push, set } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
 const uid = localStorage.getItem('uid');
-if(!uid) location.href='login.html';
+if(!uid){ alert('Please login'); location.href='login.html'; }
 
-const captchaTextEl = document.getElementById('captchaText');
+const AD_URL = "https://www.effectivegatecpm.com/dnm2jrcaj?key=c73c264e4447410ce55eb32960238eaa";
+const WATCH_USD = 0.00015;
+const CAPTCHA_USD = 0.0002;
+
+const watchAdBtn = document.getElementById('watchAdBtn');
+const watchStatus = document.getElementById('watchStatus');
+const captchaText = document.getElementById('captchaText');
 const captchaInput = document.getElementById('captchaInput');
 const captchaBtn = document.getElementById('captchaBtn');
-const watchBtn = document.getElementById('watchAdBtn');
 const capStatus = document.getElementById('capStatus');
-const watchStatus = document.getElementById('watchStatus');
-const countdownEl = document.getElementById('countdownEl');
-const countTimer = document.getElementById('countTimer');
+const capCountdown = document.getElementById('capCountdown');
+const capTimer = document.getElementById('capTimer');
 
 function genCaptcha(){
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let s='';
-  for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length));
-  captchaTextEl.innerText = s;
+  let s=''; for(let i=0;i<5;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length));
+  captchaText.innerText = s;
 }
 genCaptcha();
 
-async function credit(amount, type){
-  const uRef = doc(db,'users',uid);
-  const snap = await getDoc(uRef);
+async function credit(uid, amount, type){
+  const uRef = ref(db, `users/${uid}`);
+  const snap = await get(uRef);
   if(!snap.exists()) return;
-  const newBal = (snap.data().balance||0) + Number(amount);
-  await updateDoc(uRef, { balance: newBal });
-  await addDoc(collection(db,'activities'), { uid, type, amount, ts: new Date().toISOString() });
+  const data = snap.val();
+  const newBal = (Number(data.balance||0) + Number(amount));
+  await update(uRef, { balance: newBal });
+  const h = push(ref(db,'earnHistory')); await set(h, { uid, amount, type, ts: new Date().toISOString() });
   return newBal;
 }
 
-captchaBtn?.addEventListener('click', ()=>{
+// Watch Ad flow
+watchAdBtn.onclick = async ()=>{
+  watchAdBtn.disabled = true;
+  window.open(AD_URL,'_blank');
+  watchStatus.innerText = '⏳ Ad opened — waiting 5s...';
+  await new Promise(r=>setTimeout(r,5000));
+  try{
+    await credit(uid, WATCH_USD, 'watch_ad');
+    watchStatus.innerText = `+ $${WATCH_USD.toFixed(6)} added`;
+  }catch(e){ console.error(e); watchStatus.innerText='Error'; }
+  setTimeout(()=>watchAdBtn.disabled=false, 2000);
+};
+
+// Captcha + Ad flow
+captchaBtn.onclick = async ()=>{
   const val = (captchaInput.value||'').trim().toUpperCase();
-  const real = (captchaTextEl.innerText||'').trim().toUpperCase();
+  const real = (captchaText.innerText||'').trim().toUpperCase();
   if(!val) return alert('Type captcha');
   if(val !== real){ alert('Wrong captcha'); genCaptcha(); captchaInput.value=''; return; }
-  window.open(AD_URL, '_blank');
-  capStatus.innerText = 'Ad opened — waiting 5s...';
-  let t=5; countdownEl.classList.remove('hidden'); countTimer.innerText = t;
-  const iv = setInterval(async ()=>{
-    t--; countTimer.innerText = t;
-    if(t<=0){ clearInterval(iv); countdownEl.classList.add('hidden'); credit(WATCH_REWARD + CAPTCHA_REWARD, 'captcha+ad').then(()=>{ capStatus.innerText = `+ $${(WATCH_REWARD+CAPTCHA_REWARD).toFixed(6)} added`; captchaInput.value=''; genCaptcha(); }).catch(e=>{ capStatus.innerText='Error'; console.error(e)}); }
-  },1000);
-});
-
-watchBtn?.addEventListener('click', ()=>{
+  captchaBtn.disabled = true;
   window.open(AD_URL,'_blank');
-  watchStatus.innerText = 'Ad opened — waiting 5s...';
-  let t=5; watchStatus.innerText = `Waiting ${t}s...`;
-  const iv = setInterval(()=>{ t--; watchStatus.innerText = `Waiting ${t}s...`; if(t<=0){ clearInterval(iv); credit(WATCH_REWARD, 'watch_ad').then(()=>{ watchStatus.innerText = `+ $${WATCH_REWARD.toFixed(6)} added`; }).catch(e=>{ watchStatus.innerText='Error'; }) } },1000);
-});
+  capStatus.innerText = '⏳ Ad opened — waiting 5s...';
+  let t=5; capCountdown.classList.remove('hidden'); capTimer.innerText = t;
+  const iv = setInterval(async ()=>{
+    t--; capTimer.innerText = t;
+    if(t<=0){
+      clearInterval(iv); capCountdown.classList.add('hidden');
+      try{ await credit(uid, CAPTCHA_USD, 'captcha_ad'); capStatus.innerText = `+ $${CAPTCHA_USD.toFixed(6)} added`; }catch(e){ capStatus.innerText='Error'; }
+      captchaBtn.disabled = false; captchaInput.value=''; genCaptcha();
+    }
+  },1000);
+};
