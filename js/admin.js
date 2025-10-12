@@ -1,118 +1,95 @@
-import { db, ref, get, set, update, onValue } from "./firebase.js";
+// js/admin.js
+import { db } from './firebase.js';
+import { collection, onSnapshot, addDoc, setDoc, doc, getDoc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+const adminEmailInput = document.getElementById('admin_email');
+const adminPassInput = document.getElementById('admin_pass');
+const adminLoginBtn = document.getElementById('admin_login');
+const adminPanel = document.getElementById('adminPanel');
+const adminLoginBox = document.getElementById('adminLoginBox');
+const adminUsers = document.getElementById('adminUsers');
+const adminWithdraws = document.getElementById('adminWithdraws');
 
 const ADMIN_EMAIL = "hasanbuddika1@gmail.com";
 const ADMIN_PASS = "Aabbcc.123";
 
-const loginBox = document.getElementById("loginBox");
-const adminPanel = document.getElementById("adminPanel");
-
-const loginBtn = document.getElementById("adminLoginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-
-loginBtn.addEventListener("click", () => {
-  const email = document.getElementById("adminEmail").value;
-  const pass = document.getElementById("adminPass").value;
-
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
-    alert("✅ Admin Logged In!");
-    loginBox.style.display = "none";
-    adminPanel.style.display = "block";
-    loadUsers();
-    loadWithdraws();
-  } else {
-    alert("❌ Invalid credentials!");
-  }
+adminLoginBtn?.addEventListener('click', async ()=>{
+  const em = adminEmailInput.value.trim();
+  const pw = adminPassInput.value.trim();
+  if(em === ADMIN_EMAIL && pw === ADMIN_PASS){
+    adminLoginBox.classList.add('hidden');
+    adminPanel.classList.remove('hidden');
+    loadUsers(); loadWithdraws();
+  } else alert('Invalid admin credentials');
 });
 
-logoutBtn.addEventListener("click", () => {
-  loginBox.style.display = "block";
-  adminPanel.style.display = "none";
-});
-
-function loadUsers() {
-  const userTable = document.querySelector("#userTable tbody");
-  userTable.innerHTML = "";
-
-  onValue(ref(db, "users"), (snapshot) => {
-    userTable.innerHTML = "";
-    snapshot.forEach((child) => {
-      const user = child.val();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${user.email}</td>
-        <td>${user.username}</td>
-        <td>$${parseFloat(user.balance || 0).toFixed(5)}</td>
-        <td>${user.refCode || "-"}</td>
-        <td><button class="addBtn" data-email="${user.email}">Add $</button></td>
-      `;
-      userTable.appendChild(row);
-    });
-
-    document.querySelectorAll(".addBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const email = btn.dataset.email;
-        const userRef = ref(db, "users/" + email.replace(/\./g, "_"));
-        const snap = await get(userRef);
-        if (snap.exists()) {
-          const user = snap.val();
-          const newBal = (parseFloat(user.balance) + 0.001).toFixed(5);
-          await update(userRef, { balance: newBal });
-          alert(`💰 Balance updated for ${email}`);
-        }
-      });
+function loadUsers(){
+  onSnapshot(collection(db,'users'), snap=>{
+    adminUsers.innerHTML='';
+    snap.forEach(d=>{
+      const u = d.data();
+      const id = d.id;
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<p><strong>${u.username||'—'}</strong> • ${u.email}</p>
+        <p>Balance: $${(u.balance||0).toFixed(6)} • Referrals: ${u.refCount||0} • ${u.banned?'<span style="color:#ff6b6b">BANNED</span>':'Active'}</p>
+        <div style="display:flex;gap:8px">
+          <input id="addAmt_${id}" placeholder="$ amt" class="input" style="width:120px"/>
+          <button class="btn" onclick="window.adminAddBalance('${id}')">Add Balance</button>
+          <button class="btn" onclick="window.adminToggleBan('${id}')">${u.banned?'Unban':'Ban'}</button>
+        </div>`;
+      adminUsers.appendChild(el);
     });
   });
 }
 
-function loadWithdraws() {
-  const withdrawTable = document.querySelector("#withdrawTable tbody");
-  withdrawTable.innerHTML = "";
+window.adminAddBalance = async (uid) => {
+  const amtInput = document.getElementById(`addAmt_${uid}`);
+  const amt = parseFloat(amtInput.value);
+  if(!amt) return alert('Enter amount');
+  const uRef = doc(db,'users',uid);
+  const s = await getDoc(uRef);
+  if(!s.exists()) return alert('User not found');
+  await updateDoc(uRef, { balance: (s.data().balance||0) + amt });
+  alert('Balance added');
+  amtInput.value='';
+};
 
-  onValue(ref(db, "withdraws"), (snapshot) => {
-    withdrawTable.innerHTML = "";
-    snapshot.forEach((child) => {
-      const wd = child.val();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${wd.email}</td>
-        <td>$${wd.amount}</td>
-        <td>${wd.status}</td>
-        <td>
-          <button class="approveBtn" data-id="${child.key}">Approve</button>
-          <button class="rejectBtn" data-id="${child.key}">Reject</button>
-        </td>
-      `;
-      withdrawTable.appendChild(row);
-    });
+window.adminToggleBan = async (uid) => {
+  const uRef = doc(db,'users',uid);
+  const s = await getDoc(uRef);
+  if(!s.exists()) return alert('User not found');
+  await updateDoc(uRef, { banned: !s.data().banned });
+  alert(s.data().banned ? 'Unbanned' : 'Banned');
+};
 
-    document.querySelectorAll(".approveBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        await update(ref(db, "withdraws/" + btn.dataset.id), { status: "Approved" });
-        alert("✅ Approved!");
-      });
-    });
-
-    document.querySelectorAll(".rejectBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        await update(ref(db, "withdraws/" + btn.dataset.id), { status: "Rejected" });
-        alert("❌ Rejected!");
-      });
+function loadWithdraws(){
+  onSnapshot(collection(db,'withdraws'), snap=>{
+    adminWithdraws.innerHTML='';
+    snap.forEach(d=>{
+      const w = d.data(); const id = d.id;
+      const el = document.createElement('div'); el.className='card';
+      el.innerHTML = `<p><strong>${w.email}</strong> • $${w.amount} • ${w.status}</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="window.approveWithdraw('${id}')">Approve</button>
+          <button class="btn" onclick="window.rejectWithdraw('${id}')">Reject</button>
+        </div>`;
+      adminWithdraws.appendChild(el);
     });
   });
 }
 
-document.getElementById("addBalanceBtn").addEventListener("click", async () => {
-  const email = document.getElementById("addEmail").value;
-  const amount = parseFloat(document.getElementById("addAmount").value);
+window.approveWithdraw = async (id) => {
+  await updateDoc(doc(db,'withdraws',id), { status:'Approved', processedAt: new Date().toISOString() });
+  const w = (await getDoc(doc(db,'withdraws',id))).data();
+  // notify via API
+  fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `✅ Withdraw Approved\nUser: ${w.email}\nAmount: $${w.amount}\nAddress: ${w.address}` })});
+  alert('Approved & notified');
+};
 
-  const userRef = ref(db, "users/" + email.replace(/\./g, "_"));
-  const snap = await get(userRef);
-  if (snap.exists()) {
-    const user = snap.val();
-    const newBal = (parseFloat(user.balance) + amount).toFixed(5);
-    await update(userRef, { balance: newBal });
-    alert("💸 Balance Added Successfully!");
-  } else {
-    alert("❌ User not found!");
-  }
-});
+window.rejectWithdraw = async (id) => {
+  await updateDoc(doc(db,'withdraws',id), { status:'Rejected', processedAt: new Date().toISOString() });
+  const w = (await getDoc(doc(db,'withdraws',id))).data();
+  fetch('/api/sendTelegram', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `❌ Withdraw Rejected\nUser: ${w.email}\nAmount: $${w.amount}\nAddress: ${w.address}` })});
+  alert('Rejected & notified');
+};
