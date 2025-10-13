@@ -1,5 +1,4 @@
 // js/firebase.js
-// Realtime DB + Auth setup (edit firebaseConfig to your project if needed)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
