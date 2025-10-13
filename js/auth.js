@@ -1,56 +1,70 @@
-// js/auth.js - Register & Login (Firebase Auth + Realtime DB)
-import { auth, db } from './firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import { ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-function makeReferral(){ return Math.random().toString(36).substring(2,9).toUpperCase(); }
+// 🔥 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyBmKgh8-ckZFy_9-VlvcHD_sNxejKeS3pA",
+  authDomain: "adsclickpay-b4870.firebaseapp.com",
+  projectId: "adsclickpay-b4870",
+  storageBucket: "adsclickpay-b4870.appspot.com",
+  messagingSenderId: "315468866481",
+  appId: "1:315468866481:web:3ab95661be3939b8d7d390"
+};
 
-const registerBtn = document.getElementById('btnRegister');
-const loginBtn = document.getElementById('btnLogin');
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-registerBtn?.addEventListener('click', async ()=>{
-  const username = document.getElementById('r_username').value.trim();
-  const email = document.getElementById('r_email').value.trim().toLowerCase();
-  const pass = document.getElementById('r_pass').value;
-  const referredBy = document.getElementById('r_ref').value.trim() || null;
-  if(!username||!email||!pass) return alert('Please fill all fields');
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    const uid = cred.user.uid;
-    const code = makeReferral();
-    await set(ref(db, `users/${uid}`), { uid, username, email, balance:0.0, referralCode: code, referredBy: referredBy || null, banned:false, createdAt:new Date().toISOString() });
-    // referral bonus if valid
-    if(referredBy){
-      const all = await get(child(ref(db), 'users'));
-      if(all.exists()){
-        const users = all.val();
-        for(const k in users){
-          if(users[k].referralCode === referredBy){
-            // credit referred and owner
-            await update(ref(db, `users/${k}`), { balance: (Number(users[k].balance||0) + 0.005) });
-            await update(ref(db, `users/${uid}`), { balance: 0.005 });
-            break;
-          }
-        }
+// 🌟 Utility function for messages
+function showMessage(msg, type = "success") {
+  const box = document.getElementById("messageBox");
+  box.textContent = msg;
+  box.className = type === "success" ? "success" : "error";
+  box.style.display = "block";
+  setTimeout(() => (box.style.display = "none"), 4000);
+}
+
+// 📝 Register Function
+const regForm = document.getElementById("registerForm");
+if (regForm) {
+  regForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+    try {
+      const userRef = ref(db, "users/" + btoa(email));
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        showMessage("⚠️ Email already exists!", "error");
+      } else {
+        await set(userRef, { email, password, balance: 0 });
+        showMessage("✅ Registration Successful! Please log in.");
+        setTimeout(() => (window.location.href = "login.html"), 2000);
       }
+    } catch (err) {
+      showMessage("❌ Error: " + err.message, "error");
     }
-    localStorage.setItem('uid', uid);
-    location.href='dashboard.html';
-  }catch(e){ console.error(e); alert(e.message || e); }
-});
+  });
+}
 
-loginBtn?.addEventListener('click', async ()=>{
-  const email = document.getElementById('l_email').value.trim().toLowerCase();
-  const pass = document.getElementById('l_pass').value;
-  if(!email||!pass) return alert('Please fill all fields');
-  try{
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const uid = cred.user.uid;
-    const snap = await get(child(ref(db), `users/${uid}`));
-    // check banned (we stored banned flag in DB)
-    const userSnap = await get(ref(db, `users/${uid}`));
-    if(userSnap.exists() && userSnap.val().banned){ alert('Your account is suspended'); return; }
-    localStorage.setItem('uid', uid);
-    location.href='dashboard.html';
-  }catch(e){ console.error(e); alert('Invalid login'); }
-});
+// 🔑 Login Function
+const loginForm = document.getElementById("loginForm");
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    try {
+      const userRef = ref(db, "users/" + btoa(email));
+      const snapshot = await get(userRef);
+      if (snapshot.exists() && snapshot.val().password === password) {
+        showMessage("🎉 Welcome back!", "success");
+        localStorage.setItem("userEmail", email);
+        setTimeout(() => (window.location.href = "dashboard.html"), 2000);
+      } else {
+        showMessage("⚠️ Invalid email or password!", "error");
+      }
+    } catch (err) {
+      showMessage("❌ " + err.message, "error");
+    }
+  });
+}
