@@ -1,14 +1,23 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Login</title>
-<link rel="stylesheet" href="css/style.css"/></head><body>
-  <div class="container">
-    <div class="card">
-      <h2 class="title">🔐 Login</h2>
-      <input id="l_email" class="input" placeholder="Email" type="email"/>
-      <input id="l_pass" class="input" placeholder="Password" type="password"/>
-      <button id="btnLogin" class="btn btn-primary btn-block btn-emoji">➡ Login</button>
-      <p class="small">Don't have account? <a href="register.html">Register</a></p>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | AdsClickPay</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+  <div class="auth-container">
+    <h2>🔐 Login</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="📧 Enter Email" required>
+      <input type="password" id="loginPassword" placeholder="🔒 Enter Password" required>
+      <button type="submit" class="btn">➡️ Login</button>
+    </form>
+    <p>Don’t have an account? <a href="register.html">Register</a></p>
+    <div id="messageBox" class="hidden"></div>
   </div>
+
   <script type="module" src="js/auth.js"></script>
-</body></html>
+</body>
+</html>
