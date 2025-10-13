@@ -1,16 +1,23 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Register</title>
-<link rel="stylesheet" href="css/style.css"/></head><body>
-  <div class="container">
-    <div class="card">
-      <h2 class="title">📝 Create Account</h2>
-      <input id="r_username" class="input" placeholder="Username"/>
-      <input id="r_email" class="input" placeholder="Email" type="email"/>
-      <input id="r_pass" class="input" placeholder="Password" type="password"/>
-      <input id="r_ref" class="input" placeholder="Referral code (optional)"/>
-      <button id="btnRegister" class="btn btn-primary btn-block btn-emoji">🎉 Register</button>
-      <p class="small">Already have account? <a href="login.html">Login</a></p>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | AdsClickPay</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+  <div class="auth-container">
+    <h2>📝 Create Account</h2>
+    <form id="registerForm">
+      <input type="email" id="regEmail" placeholder="📧 Enter Email" required>
+      <input type="password" id="regPassword" placeholder="🔒 Enter Password" required>
+      <button type="submit" class="btn">🚀 Register</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+    <div id="messageBox" class="hidden"></div>
   </div>
+
   <script type="module" src="js/auth.js"></script>
-</body></html>
+</body>
+</html>
